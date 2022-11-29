@@ -136,17 +136,19 @@ small_dimension = (50,25)
 
 # set dimension for cropping image
 x, y, width, depth = x_min, y_min, x_max-x_min, y_max-y_min,
-lip_rect = image_rgb[y:(y+depth), x:(x+width)]
-lip_rect = cv2.resize(lip_rect, standard_dimension)
+lip_rect_o = image_rgb[y:(y+depth), x:(x+width)]
+lip_rect = cv2.resize(lip_rect_o, standard_dimension)
+lip_rect = cv2.cvtColor(lip_rect, cv2.COLOR_BGR2RGB)
 cv2.imwrite(Path_lip + "Type1_standard.jpg",lip_rect)
 plt.axis("off")
 plt.imshow(lip_rect)
 plt.show()
 
-lip_rect_small = cv2.resize(lip_rect, small_dimension)
-cv2.imwrite(Path_lip + "Type1_small.jpg",lip_rect)
+lip_rect_small = cv2.resize(lip_rect_o, small_dimension)
+lip_rect_small = cv2.cvtColor(lip_rect_small, cv2.COLOR_BGR2RGB)
+cv2.imwrite(Path_lip + "Type1_small.jpg",lip_rect_small)
 plt.axis("off")
-plt.imshow(lip_rect)
+plt.imshow(lip_rect_small)
 plt.show()
 
 #%% Extract lip only croped image
@@ -177,15 +179,17 @@ mask = np.zeros(croped.shape[:2], np.uint8)
 ctr = np.array(pts_all).reshape((-1,1,2)).astype(np.int32)
 cv2.drawContours(mask, [ctr], -1, (255, 255, 255), -1, cv2.LINE_AA)
 lip_mask = cv2.resize(mask, standard_dimension)
+lip_mask = cv2.cvtColor(lip_mask, cv2.COLOR_BGR2RGB)
 cv2.imwrite(Path_lip + "Type2_standard.jpg",lip_mask)
 plt.axis("off")
 plt.imshow(lip_mask)
 plt.show()
 
-lip_mask = cv2.resize(mask, small_dimension)
-cv2.imwrite(Path_lip + "Type2_small.jpg",lip_mask)
+lip_mask_small = cv2.resize(mask, small_dimension)
+lip_mask_small = cv2.cvtColor(lip_mask_small, cv2.COLOR_BGR2RGB)
+cv2.imwrite(Path_lip + "Type2_small.jpg",lip_mask_small)
 plt.axis("off")
-plt.imshow(lip_mask)
+plt.imshow(lip_mask_small)
 plt.show()
 
 
@@ -205,15 +209,17 @@ cv2.drawContours(mask, [ctr], -1, (255, 255, 255), -1, cv2.LINE_AA)
 ## (3) do bit-op
 dst = cv2.bitwise_and(croped, croped, mask=mask)
 lip_dst = cv2.resize(dst, standard_dimension)
+lip_dst = cv2.cvtColor(lip_dst, cv2.COLOR_BGR2RGB)
 cv2.imwrite(Path_lip + "Type3_standard.jpg",lip_dst)
 plt.axis("off")
 plt.imshow(lip_dst)
 plt.show()
 
-lip_dst = cv2.resize(dst, small_dimension)
-cv2.imwrite(Path_lip + "Type3_small.jpg",lip_dst)
+lip_dst_small = cv2.resize(dst, small_dimension)
+lip_dst_small = cv2.cvtColor(lip_dst_small, cv2.COLOR_BGR2RGB)
+cv2.imwrite(Path_lip + "Type3_small.jpg",lip_dst_small)
 plt.axis("off")
-plt.imshow(lip_dst)
+plt.imshow(lip_dst_small)
 plt.show()
 
 
