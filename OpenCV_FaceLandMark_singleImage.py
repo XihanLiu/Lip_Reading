@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 # used to change image size
 from pylab import rcParams
 import numpy as np
+from scipy.io import savemat
 
 #%%
 Path_image = "example_face/1.jpeg"
@@ -224,26 +225,39 @@ plt.show()
 
 
 
-# cv2.imwrite("croped.png", croped)
-# cv2.imwrite("mask.png", mask)
-# cv2.imwrite("dst.png", dst)
-# cv2.imwrite("dst2.png", dst2)
-
-
 
 
 
 #%% Extract lip landmark distance matrix
+###################################################################
+#                             Type IV                             #
+###################################################################
 '''
 indexs that are on the lips:
     48-67
 generate relative distance vector
 '''
-# numDistForEachNode = landmark[0,:,0].shape-1
-# landmark_copy = landmark.copy()
-# landmark_copy
-# for i range numDistForEachNode: 
+def rotation_once(landmark_array):
+    landmark_list = list(landmark_array)
+    landmark_list.append(landmark_list.pop(0))
+    return np.array(landmark_list)
 
+dist_list = []
+numDistForEachNode = landmark[0,:,0].shape[0]-1
+landmark_copy = landmark[0,:,:].copy()
+landmark_copy = rotation_once(landmark_copy)
+
+for i in range(numDistForEachNode): 
+    dist = np.linalg.norm(landmark[0,:,:]-landmark_copy,axis=1)
+    dist_list.append(dist)
+    landmark_copy = rotation_once(landmark_copy)
+    
+dist_array = np.array(dist_list)
+
+mdic = {"dist_array": dist_array}
+savemat(Path_lip+"Type4.mat",mdic)
+
+    
 
 
 
