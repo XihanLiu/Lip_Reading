@@ -4,9 +4,8 @@ from PIL import Image
 from model import CNN
 from model import RNN
 import torch.nn as nn
-from torch.utils.data import DataLoader
 
-
+#Convert one input image feeding into the CNN - > RNN
 #Convert input image to tensor
 test_image = Image.open(r'/Users/liuxihan/Desktop/Lip_Reading/example_lip_extracted/SingleImageExample/Type1_standard.jpg')
 convert_tensor = transforms.ToTensor()
