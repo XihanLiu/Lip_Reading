@@ -68,7 +68,7 @@ class CNN(nn.Module):
         return out
 
 class RNN(nn.Module):
-    def __init__(self,batch_sizes = 5,numLayers = 3, numInputs = 100,numNeurons = 20,numOutputs=10):
+    def __init__(self,batch_sizes = 5,numLayers = 1, numInputs = 100,numNeurons = 20,numOutputs=10):
         super(RNN,self).__init__()
 
         self.numInputs = numInputs
