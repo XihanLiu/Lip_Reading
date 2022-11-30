@@ -116,6 +116,7 @@ def Video2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoN
             break
         else: 
             image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            print(image_rgb.shape)
             # plt.imshow(image_rgb)
             # plt.show()
             # Full Frame seperation

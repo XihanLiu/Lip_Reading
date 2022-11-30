@@ -19,16 +19,62 @@ import numpy as np
 from scipy.io import savemat
 import os
 import imageio
+import shutil
 
 
 #%%
-Path_image_root = "example_face/"
-Video_name = "FORWARD_00001_31.gif"
-Path_VideoImageExample_root = "example_lip_extracted/GIFImageExample/"
-Path_fullFrames = "frameExtraction/"
-Path_2dFrames = "Lip_frameByFrame/"
-Path_3dMatrixs = "Lip_3dMatrix/"
+# Path_image_root = "example_face/"
+# Video_name = "ABOUT_00002_31.gif"
+Path_label_folder = "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/dataset_sample/"
+Path_fullFrame_folder = "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/Lip_Reading/example_lip_extracted/GIFImageExample/frameExtraction"
+Path_2dFrame_folder= "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/Lip_Reading/example_lip_extracted/GIFImageExample/Lip_frameByFrame"
+Path_3dMatrix_folder= "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/Lip_Reading/example_lip_extracted/GIFImageExample/Lip_3dMatrix"
+# Path_VideoImageExample_root = "example_lip_extracted/GIFImageExample/"
+# Path_fullFrames = "frameExtraction/"
+# Path_2dFrames = "Lip_frameByFrame/"
+# Path_3dMatrixs = "Lip_3dMatrix/"
 #%%
+def GIF2Frames_multiLabel(Path_label_folder, Path_fullFrame_folder, Path_2dFrame_folder, Path_3dMatrix_folder):
+    '''
+
+    Parameters
+    ----------
+    Path_label_folder : String
+        directory until the labels
+    Path_fullFrame_folder : String
+        DESCRIPTION.
+    Path_2dFrame_folder : String
+        DESCRIPTION.
+    Path_3dMatrix_folder : String
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    '''
+    current_label = 0
+    total_label = len(os.listdir(Path_label_folder))
+    for label_id in os.listdir(Path_label_folder):
+        current_video = 0
+        total_video = len(os.listdir(Path_label_folder+"/"+label_id))
+        
+        Path_fullFrame = Path_fullFrame_folder + "/" + label_id + "/"
+        Path_2dFrame = Path_2dFrame_folder + "/" + label_id+ "/"
+        Path_3dMatrix = Path_3dMatrix_folder + "/" + label_id+ "/"
+        
+        os.makedirs(Path_fullFrame, exist_ok=True)
+        os.makedirs(Path_2dFrame, exist_ok=True)
+        os.makedirs(Path_3dMatrix, exist_ok=True)
+        
+        
+        for VideoName in os.listdir(Path_label_folder+"/"+label_id):
+            print("CurrentLabel="+label_id +";prograss=" + str(current_label)+"/"+str(total_label) + " || current video=" +VideoName+";prograss=" + str(current_video)+"/"+str(total_video))
+            Path_video = Path_label_folder+"/"+label_id+"/"+VideoName
+            GIF2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoName)
+            current_video = current_video + 1
+        current_label = current_label + 1
+
 
 def GIF2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoName):
     '''
@@ -52,7 +98,7 @@ def GIF2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoNam
     # reading the video file
     # vidcap = cv2.VideoCapture(Path_video)
     count = 0
-    gif = imageio.mimread(Path_image_root+Video_name)
+    gif = imageio.mimread(Path_video)
     #------------------------------------------------------------------------------------#
     #                                making directories                                  #
     #------------------------------------------------------------------------------------#
@@ -116,7 +162,15 @@ def GIF2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoNam
         # plt.show()
         # Full Frame seperation
         cv2.imwrite(os.path.join(Path_currentVideoFullFrame,"frame{:d}.jpg".format(count)), image_rgb)     # save frame as JPEG 
-        landmark = FacialLandmark(image_rgb)
+        try:
+            landmark = FacialLandmark(image_rgb)
+        except:
+            print("bad frame skip this example!")
+            shutil.rmtree(Path_currentVideoFullFrame)
+            shutil.rmtree(Path_2dFrame+VideoName+"/")
+            shutil.rmtree(Path_3dMatrix+VideoName+"/")
+            break
+            
         # Type I
         lip_rect, lip_rect_small = typeI_2dFrame(image_rgb, landmark, Path_currentVideo_2dFrame_standard_typeI, Path_currentVideo_2dFrame_small_typeI, count)
         lip_rect_list.append(lip_rect)
@@ -133,32 +187,32 @@ def GIF2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoNam
         dist_array = typeIV_2dFrame(landmark, Path_currentVideo_2dFrame_typeIV, count)
         dist_array_list.append(dist_array)
         count += 1
-    
-    # print("{} images are extacted in {}.".format(count,Path_fullFrame))
-    lip_rect_3d_array = np.array(lip_rect_list)
-    lip_rect_small_3d_array = np.array(lip_rect_small_list)
-    mdic = {"lip_rect_3d_array": lip_rect_3d_array}
-    savemat(Path_currentVideo_3dMatrix_standard_typeI+"_3dTypeI.mat",mdic)
-    mdic = {"lip_rect_small_3d_array": lip_rect_small_3d_array}
-    savemat(Path_currentVideo_3dMatrix_small_typeI+"_3dTypeI.mat",mdic)
-    
-    lip_mask_3d_array = np.array(lip_mask_list)
-    lip_mask_small_3d_array = np.array(lip_mask_small_list)
-    mdic = {"lip_mask_3d_array": lip_mask_3d_array}
-    savemat(Path_currentVideo_3dMatrix_standard_typeII+"_3dTypeII.mat",mdic)
-    mdic = {"lip_mask_small_3d_array": lip_mask_small_3d_array}
-    savemat(Path_currentVideo_3dMatrix_small_typeII+"_3dTypeII.mat",mdic)
-    
-    lip_dst_3d_array = np.array(lip_dst_list)
-    lip_dst_small_3d_array = np.array(lip_dst_small_list)
-    mdic = {"lip_dst_3d_array": lip_dst_3d_array}
-    savemat(Path_currentVideo_3dMatrix_standard_typeIII+"_3dTypeIII.mat",mdic)
-    mdic = {"lip_dst_small_3d_array": lip_dst_small_3d_array}
-    savemat(Path_currentVideo_3dMatrix_small_typeIII+"_3dTypeIII.mat",mdic)
-    
-    dist_3d_array = np.array(dist_array_list)
-    mdic = {"dist_3d_array": dist_3d_array}
-    savemat(Path_currentVideo_3dMatrix_typeIV+"_3dTypeIV.mat",mdic)
+    if os.path.exists(Path_currentVideoFullFrame):
+        # print("{} images are extacted in {}.".format(count,Path_fullFrame))
+        lip_rect_3d_array = np.array(lip_rect_list)
+        lip_rect_small_3d_array = np.array(lip_rect_small_list)
+        mdic = {"lip_rect_3d_array": lip_rect_3d_array}
+        savemat(Path_currentVideo_3dMatrix_standard_typeI+"_3dTypeI.mat",mdic)
+        mdic = {"lip_rect_small_3d_array": lip_rect_small_3d_array}
+        savemat(Path_currentVideo_3dMatrix_small_typeI+"_3dTypeI.mat",mdic)
+        
+        lip_mask_3d_array = np.array(lip_mask_list)
+        lip_mask_small_3d_array = np.array(lip_mask_small_list)
+        mdic = {"lip_mask_3d_array": lip_mask_3d_array}
+        savemat(Path_currentVideo_3dMatrix_standard_typeII+"_3dTypeII.mat",mdic)
+        mdic = {"lip_mask_small_3d_array": lip_mask_small_3d_array}
+        savemat(Path_currentVideo_3dMatrix_small_typeII+"_3dTypeII.mat",mdic)
+        
+        lip_dst_3d_array = np.array(lip_dst_list)
+        lip_dst_small_3d_array = np.array(lip_dst_small_list)
+        mdic = {"lip_dst_3d_array": lip_dst_3d_array}
+        savemat(Path_currentVideo_3dMatrix_standard_typeIII+"_3dTypeIII.mat",mdic)
+        mdic = {"lip_dst_small_3d_array": lip_dst_small_3d_array}
+        savemat(Path_currentVideo_3dMatrix_small_typeIII+"_3dTypeIII.mat",mdic)
+        
+        dist_3d_array = np.array(dist_array_list)
+        mdic = {"dist_3d_array": dist_3d_array}
+        savemat(Path_currentVideo_3dMatrix_typeIV+"_3dTypeIV.mat",mdic)
 
 
 
@@ -190,12 +244,8 @@ def FacialLandmark(image):
     # save face detection algorithm's name as haarcascade
     haarcascade = "haarcascade_frontalface_alt2.xml"
     # chech if file is in working directory
-    if (haarcascade in os.listdir(os.curdir)):
-        print("File exists")
-    else:
-        # download file from url and save locally as haarcascade_frontalface_alt2.xml, < 1MB
+    if not (haarcascade in os.listdir(os.curdir)):
         urlreq.urlretrieve(haarcascade_url, haarcascade)
-        print("File downloaded")
     # create an instance of the Face Detection Cascade Classifier
     detector = cv2.CascadeClassifier(haarcascade)
     # Detect faces using the haarcascade classifier on the "grayscale image"
@@ -206,13 +256,11 @@ def FacialLandmark(image):
     # save facial landmark detection model's name as LBFmodel
     LBFmodel = "lbfmodel.yaml"
 
-    # check if file is in working directory
-    if (LBFmodel in os.listdir(os.curdir)):
-        print("File exists")
-    else:
+    # # check if file is in working directory
+    if not (LBFmodel in os.listdir(os.curdir)):
         # download picture from url and save locally as lbfmodel.yaml, < 54MB
         urlreq.urlretrieve(LBFmodel_url, LBFmodel)
-        print("File downloaded")
+        # print("File downloaded")
     # create an instance of the Facial landmark Detector with the model
     landmark_detector  = cv2.face.createFacemarkLBF()
     landmark_detector.loadModel(LBFmodel)
@@ -394,19 +442,11 @@ def rotation_once(landmark_array):
     landmark_list.append(landmark_list.pop(0))
     return np.array(landmark_list)
 
-# @TODO: implement Type I, Type II, Type III, and Type IV 
-# Type I 
-# Type II 
-# Type III 
+
 
     
 
-#%%
-######################################################################################
-#                                       Test field                                   #
-######################################################################################
-gif = imageio.mimread(Path_image_root+Video_name)
-
 
 #%% itergration test
-GIF2Frames(Path_image_root+Video_name, Path_VideoImageExample_root+Path_fullFrames, Path_VideoImageExample_root+Path_2dFrames, Path_VideoImageExample_root+Path_3dMatrixs, Video_name)
+# GIF2Frames(Path_image_root+Video_name, Path_VideoImageExample_root+Path_fullFrames, Path_VideoImageExample_root+Path_2dFrames, Path_VideoImageExample_root+Path_3dMatrixs, Video_name)
+GIF2Frames_multiLabel(Path_label_folder, Path_fullFrame_folder, Path_2dFrame_folder, Path_3dMatrix_folder)

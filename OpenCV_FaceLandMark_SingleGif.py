@@ -23,7 +23,7 @@ import imageio
 
 #%%
 Path_image_root = "example_face/"
-Video_name = "FORWARD_00001_31.gif"
+Video_name = "ABOUT_00002_31.gif"
 Path_VideoImageExample_root = "example_lip_extracted/GIFImageExample/"
 Path_fullFrames = "frameExtraction/"
 Path_2dFrames = "Lip_frameByFrame/"
@@ -110,7 +110,8 @@ def GIF2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoNam
     
     
     
-    for image in gif: 
+    for image in gif:
+        image = image[:,:,:3]
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         # plt.imshow(image_rgb)
         # plt.show()
@@ -162,8 +163,22 @@ def GIF2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoNam
 
 
 
-
-
+def GIF2FullFrame(Path_video, Path_fullFrame, VideoName):
+    count = 0
+    gif = imageio.mimread(Path_image_root+Video_name)
+    # FULL FRAME PATH
+    Path_currentVideoFullFrame = Path_fullFrame+VideoName+"/"
+    # make new directories
+    os.makedirs(Path_currentVideoFullFrame, exist_ok=True)
+    for image in gif:
+        image = image[:,:,:3]
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        plt.imshow(image_rgb)
+        plt.show()
+        # Full Frame seperation
+        cv2.imwrite(os.path.join(Path_currentVideoFullFrame,"frame{:d}.jpg".format(count)), image_rgb)     # save frame as JPEG 
+        print(count)
+        count = count + 1 
 
 def FacialLandmark(image):
     '''
@@ -406,7 +421,8 @@ def rotation_once(landmark_array):
 #                                       Test field                                   #
 ######################################################################################
 gif = imageio.mimread(Path_image_root+Video_name)
-
+#%%
+GIF2FullFrame(Path_image_root+Video_name, Path_VideoImageExample_root+Path_fullFrames, Video_name)
 
 #%% itergration test
 GIF2Frames(Path_image_root+Video_name, Path_VideoImageExample_root+Path_fullFrames, Path_VideoImageExample_root+Path_2dFrames, Path_VideoImageExample_root+Path_3dMatrixs, Video_name)

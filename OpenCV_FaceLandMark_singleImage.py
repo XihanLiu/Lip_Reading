@@ -19,7 +19,8 @@ import numpy as np
 from scipy.io import savemat
 
 #%%
-Path_image = "example_face/1.jpeg"
+# Path_image = "example_face/1.jpeg"
+Path_image = "example_lip_extracted/GIFImageExample/frameExtraction/ABOUT_00002_31.gif/frame2.jpg"
 Path_lip = "example_lip_extracted/SingleImageExample/"
 # read image with openCV
 image = cv2.imread(Path_image)
@@ -108,14 +109,14 @@ landmark_detector.loadModel(LBFmodel)
 # Detect landmarks on "image_gray"
 _, landmarks = landmark_detector.fit(image_gray, faces)
 landmark = landmarks[0]
-# for landmark in landmarks:
-#     for x,y in landmark[0]:
-# 		# display landmarks on "image_cropped"
-# 		# with white colour in BGR and thickness 1
-#         cv2.circle(image_cropped, (int(x), int(y)), 1, (255, 255, 255), 1)
-# plt.axis("off")
-# plt.imshow(image_cropped)
-# plt.show()
+for landmark in landmarks:
+    for x,y in landmark[0]:
+		# display landmarks on "image_cropped"
+		# with white colour in BGR and thickness 1
+        cv2.circle(image_cropped, (int(x), int(y)), 1, (255, 255, 255), 1)
+plt.axis("off")
+plt.imshow(image_cropped)
+plt.show()
 
 #%% Extract rectangle image containing the mouth
 ###################################################################
