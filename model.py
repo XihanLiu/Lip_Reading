@@ -67,7 +67,7 @@ class CNN(nn.Module):
 
         return out
 
-class RNN(nn.Module):
+class RNN(nn.Module): #Check RNN inputs for classification task
     def __init__(self,batch_sizes = 5,numLayers = 1, numInputs = 100,numNeurons = 20,numOutputs=10):
         super(RNN,self).__init__()
 
