@@ -12,28 +12,26 @@ import urllib.request as urlreq
 # used to access local directory
 import os
 # used to plot our images
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 # used to change image size
-from pylab import rcParams
+# from pylab import rcParams
 import numpy as np
 from scipy.io import savemat
-import os
-import imageio
+# import os
+# import imageio
 import shutil
-
+import warnings
+warnings.simplefilter('ignore')
 
 #%%
 # Path_image_root = "example_face/"
 # Video_name = "ABOUT_00002_31.gif"
-Path_label_folder = "\lipread_mp4_A"
+Path_label_folder = "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/lipread_mp4_A"
 data_type = "/train"
-Path_fullFrame_folder = "D:\Study\Master\Semaster_1\extracted\TRAIN\FrameExtraction"
-Path_2dFrame_folder= "D:\Study\Master\Semaster_1\extracted\TRAIN\Lip_frameByFrame"
-Path_3dMatrix_folder= "D:\Study\Master\Semaster_1\extracted\TRAIN\Lip_3dMatrix"
-# Path_VideoImageExample_root = "example_lip_extracted/GIFImageExample/"
-# Path_fullFrames = "frameExtraction/"
-# Path_2dFrames = "Lip_frameByFrame/"
-# Path_3dMatrixs = "Lip_3dMatrix/"
+Path_fullFrame_folder = "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/extracted/TRAIN/FrameExtraction"
+Path_2dFrame_folder= "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/extracted/TRAIN/Lip_frameByFrame"
+Path_3dMatrix_folder= "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/extracted/TRAIN/Lip_3dMatrix"
+
 #%%
 def Video2Frames_multiLabel(Path_label_folder, Path_fullFrame_folder, Path_2dFrame_folder, Path_3dMatrix_folder, data_type):
     '''
@@ -58,7 +56,7 @@ def Video2Frames_multiLabel(Path_label_folder, Path_fullFrame_folder, Path_2dFra
     for label_id in os.listdir(Path_label_folder):
         # print(label_id)
         current_video = 0
-        total_video = len(os.listdir(Path_label_folder+"/"+label_id+data_type))
+        total_video = int(len(os.listdir(Path_label_folder+"/"+label_id+data_type))/2)
         # print(Path_fullFrame_folder)
         Path_fullFrame = Path_fullFrame_folder + "/" + label_id +"/"
         Path_2dFrame = Path_2dFrame_folder + "/" + label_id+"/"
@@ -75,7 +73,7 @@ def Video2Frames_multiLabel(Path_label_folder, Path_fullFrame_folder, Path_2dFra
                 Path_video = Path_label_folder+"/"+label_id+data_type+"/"+VideoName
                 Video2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoName)
                 current_video = current_video + 1
-            current_label = current_label + 1
+        current_label = current_label + 1
 
 
 def Video2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoName):
@@ -216,6 +214,8 @@ def Video2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoN
         dist_3d_array = np.array(dist_array_list)
         mdic = {"dist_3d_array": dist_3d_array}
         savemat(Path_currentVideo_3dMatrix_typeIV+"_3dTypeIV.mat",mdic)
+        del lip_rect_3d_array, lip_rect_small_3d_array, lip_mask_3d_array, lip_mask_small_3d_array, lip_dst_3d_array, lip_dst_small_3d_array, dist_3d_array
+        del lip_rect_list, lip_mask_list, lip_dst_list, lip_rect_small_list, lip_mask_small_list, lip_dst_small_list, dist_array_list
     
 
 def FacialLandmark(image):
@@ -233,11 +233,11 @@ def FacialLandmark(image):
         landmark detected from image
 
     '''
-    plt.imshow(image)
-    plt.show()
+    # plt.imshow(image)
+    # plt.show()
     image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    plt.imshow(image_gray)
-    plt.show()
+    # plt.imshow(image_gray)
+    # plt.show()
     # save face detection algorithm's url in haarcascade_url variable
     haarcascade_url = "https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_alt2.xml"
     # save face detection algorithm's name as haarcascade
