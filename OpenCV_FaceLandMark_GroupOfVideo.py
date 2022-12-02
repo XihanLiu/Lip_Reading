@@ -26,11 +26,17 @@ warnings.simplefilter('ignore')
 #%%
 # Path_image_root = "example_face/"
 # Video_name = "ABOUT_00002_31.gif"
-Path_label_folder = "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/lipread_mp4_A"
+# Path_label_folder = "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/lipread_mp4_A"
+# data_type = "/train"
+# Path_fullFrame_folder = "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/extracted/TRAIN/FrameExtraction"
+# Path_2dFrame_folder= "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/extracted/TRAIN/Lip_frameByFrame"
+# Path_3dMatrix_folder= "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/extracted/TRAIN/Lip_3dMatrix"
+
+Path_label_folder = "D:\Study\Master\Semaster_1\lipread_mp4_A2"
 data_type = "/train"
-Path_fullFrame_folder = "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/extracted/TRAIN/FrameExtraction"
-Path_2dFrame_folder= "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/extracted/TRAIN/Lip_frameByFrame"
-Path_3dMatrix_folder= "/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/extracted/TRAIN/Lip_3dMatrix"
+Path_fullFrame_folder = "D:\Study\Master\Semaster_1\extracted\TRAIN\FrameExtraction"
+Path_2dFrame_folder= "D:\Study\Master\Semaster_1\extracted\TRAIN\Lip_frameByFrame"
+Path_3dMatrix_folder= "D:\Study\Master\Semaster_1\extracted\TRAIN\Lip_3dMatrix"
 
 #%%
 def Video2Frames_multiLabel(Path_label_folder, Path_fullFrame_folder, Path_2dFrame_folder, Path_3dMatrix_folder, data_type):
@@ -163,7 +169,7 @@ def Video2Frames(Path_video, Path_fullFrame, Path_2dFrame, Path_3dMatrix, VideoN
             break
         else: 
             image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            cv2.imwrite(os.path.join(Path_currentVideoFullFrame,"frame{:d}.jpg".format(count)), image_rgb)     # save frame as JPEG 
+            # cv2.imwrite(os.path.join(Path_currentVideoFullFrame,"frame{:d}.jpg".format(count)), image_rgb)     # save frame as JPEG 
             try:
                 landmark = FacialLandmark(image_rgb)
             except:
