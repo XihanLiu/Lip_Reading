@@ -47,9 +47,9 @@ class LipDataset(Dataset):
         with open(self.__getlabels__(),'r') as f:
             contents = f.readlines()
             label = (contents[index])[0:-1]
-            video_names = os.listdir(os.path.join(self.img_dir,label))
+            video_names = natsort.natsorted(os.listdir(os.path.join(self.img_dir,label)))
             for video in video_names:
-                images_names = os.listdir(os.path.join(self.img_dir,label,video+self.surfix))
+                images_names = natsort.natsorted(os.listdir(os.path.join(self.img_dir,label,video+self.surfix)))
                 num_images = len(images_names)
                 for index in range(len(images_names)):
                     images_names[index] = os.path.join(self.img_dir,label,video+self.surfix,images_names[index])
@@ -67,12 +67,12 @@ class LipDataset(Dataset):
         tensor = convert_tensor(select_frame)
         return tensor,label
 
-Output = LipDataset(single_video_frames_dir)
-Size = Output.size()
+# Output = LipDataset(single_video_frames_dir)
+# Size = Output.size()
 
-for group in range(Size):
-    names,label,length = Output.getnames(group)
-    for frame in range(length):
-        train_tensor,train_label = Output.getitems(group,frame)
+# for group in range(Size):
+#     names,label,length = Output.getnames(group)
+#     for frame in range(length):
+#         train_tensor,train_label = Output.getitems(group,frame)
         #print(train_tensor.shape,train_label) # Check output: "torch.Size([3, 50, 100]) AROUND"
         

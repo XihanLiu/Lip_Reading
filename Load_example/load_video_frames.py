@@ -13,9 +13,9 @@ import torch.nn as nn
 
 
 
-gif_dir = './example_lip_extracted/VideoImageExample/Lip_frameByFrame/AFTERNOON.mp4/standard/typeI/'
-frames = natsort.natsorted(os.listdir(gif_dir))
-print(frames)
+single_video_frames_dir = './example_lip_extracted/VideoImageExample/Lip_frameByFrame/AFTERNOON.mp4/standard/typeI/'
+frames_list = natsort.natsorted(os.listdir(single_video_frames_dir))
+
 # CNN_results = torch.Tensor()
 # convert_tensor = transforms.ToTensor()
 # CNN_model = CNN()
