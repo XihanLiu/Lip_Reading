@@ -118,7 +118,7 @@ del test
 
 #%%
 #implement the model
-num_classes=5
+num_classes=11
 #50*100*29
 #create CNN model
 class CNNModel(nn.Module):
