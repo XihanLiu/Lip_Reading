@@ -32,10 +32,12 @@ import h5py
 import shutil
 #from plot3D import *
 
+from numpy.linalg import norm
+
 
 #%%
 PATH_ROOT = "D:/Study/Master/Semaster_1/extracted/TRAIN/Lip_3dMatrix/train" # path to the 3d_matrix root
-DatasetSize = "standard"
+DatasetSize = "small"
 DatasetType = "III"
 # if type I, II, III
 if len(DatasetSize) != 0:
@@ -49,17 +51,17 @@ def constuct_Dataset_withSplitingRatio(PathRoot, data_dirc, Dataset_type, spliti
     # train_label_list = []
     # test_label_list = []
     label_string_list = []
-    TrainData_list = [] # DataALL final (#of all dataset, 50, 100, 29, 3)
+    TrainData_list = [] # DataALL final (#of all dataset, 3, 50, 100, 29)
     TestData_list = []
     for i, label_id in enumerate(os.listdir(PathRoot)):
         Label_root = PathRoot+"/"+label_id
         # constructing the label vector
         num_videos = len(os.listdir(Label_root))
-        num_train = int(num_videos*0.8)
+        num_train = int(num_videos*spliting_ratio)
         num_test = num_videos - num_train
         if i == 0:
-            train_label = np.ones((num_train,1))*i
-            test_label = np.ones((num_test,1))*i
+            train_label = (np.ones((num_train,1))*i).astype('uint8')
+            test_label = (np.ones((num_test,1))*i).astype('uint8')
         else: 
             train_label = np.concatenate((train_label, np.ones((num_train,1))*i),axis=0)
             test_label = np.concatenate((test_label, np.ones((num_test,1))*i),axis=0)
@@ -70,20 +72,39 @@ def constuct_Dataset_withSplitingRatio(PathRoot, data_dirc, Dataset_type, spliti
                 Data_current_keys = list(Data_current.keys())
                 Data_current = Data_current[Data_current_keys[3]]
                 num_frames, num_rows, num_coloumns, num_channels = Data_current.shape
-                Data_current = Data_current.reshape(num_rows, num_coloumns,num_frames,num_channels)
+                Data_current = Data_current.reshape(num_channels, num_rows,num_coloumns,num_frames)
+                # Data_current = Data_current.reshape(num_rows*num_coloumns, num_frames,num_channels) # (50*100, 29, 3)
+                # Data_current = Data_current/ norm(Data_current,axis=0)
+                # Data_current = Data_current.reshape(num_rows,num_coloumns,num_frames,num_channels)
+                
+                
                 if j < num_train:
                     TrainData_list.append(Data_current)
                 else: 
                     TestData_list.append(Data_current)
             else: 
                  os.remove(Label_root+'/'+video_id)
-    return np.array(TrainData_list), np.array(TestData_list), train_label[:,0], test_label[:,0]
+    return np.array(TrainData_list).astype("uint8"), np.array(TestData_list).astype("uint8"), train_label[:,0], test_label[:,0], label_string_list
     
-    
+def normalization(X):
+    '''
+    X (#of all dataset, 3, 50, 100, 29)
+    '''
+    for i in tqdm(range(X.shape[0])):
+        for j in range(X.shape[4]):
+            current_image = X[i,:,:,:,j]
+            num_channel, num_row, num_column = current_image.shape
+            current_image = current_image.flatten()
+            normed_image = current_image/norm(current_image)
+            X[i,:,:,:,j] = normed_image.reshape(num_channel, num_row, num_column)
+    return X
 #%% test field
-X_train, X_test, targets_train, targets_test = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.8)
+X_train, X_test, targets_train, targets_test, label_string_list = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.9)
 
-
+#%%
+X_train = normalization(X_train)
+X_test = normalization(X_test)
+            
 #%%
 #convert all the variables to pytorch tensor format
 #X_train should have shape (num_of_dataset,50,100,29,3) and targets_train(num_of_dataset,1)
@@ -107,18 +128,15 @@ test=torch.utils.data.TensorDataset(test_x,test_y)
 del test_x, test_y,
 
 #data loader
-train_loader=torch.utils.data.DataLoader(train,batch_size=batch_size,shuffle=False)
+train_loader=torch.utils.data.DataLoader(train,batch_size=batch_size,shuffle=True)
 del train
-test_loader=torch.utils.data.DataLoader(test,batch_size=batch_size,shuffle=False)#initialize the dataset and divide them into groups
+test_loader=torch.utils.data.DataLoader(test,batch_size=batch_size,shuffle=True)#initialize the dataset and divide them into groups
 del test
-
-
-
 
 
 #%%
 #implement the model
-num_classes=5
+num_classes=11
 #50*100*29
 #create CNN model
 class CNNModel(nn.Module):
@@ -135,7 +153,7 @@ class CNNModel(nn.Module):
     #49-2=47
     #13-2=11
     #11，23，5
-    self.fc1=nn.Linear(11*23*5*64, 128)
+    self.fc1=nn.Linear(11264, 128)
     self.fc2 = nn.Linear(128, 64)
     self.fc3=nn.Linear(64,num_classes)
     self.relu = nn.LeakyReLU()
@@ -144,7 +162,7 @@ class CNNModel(nn.Module):
         
   def _conv_layer_set(self, in_c, out_c):
         conv_layer = nn.Sequential(
-        nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 3), padding=0),
+        nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 5), padding=0),
         nn.LeakyReLU(),
         nn.MaxPool3d((2, 2, 2)),
         )
@@ -180,8 +198,8 @@ print(model)
 error = nn.CrossEntropyLoss()
 
 # SGD Optimizer
-learning_rate = 0.001
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+learning_rate = 0.01
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 #%%
 #train model
@@ -192,38 +210,46 @@ iteration_list = []
 accuracy_list = []
 for epoch in range(num_epochs):
     for i, (images, labels) in enumerate(train_loader):
-        print(images.shape)
-        train = Variable(images.view(10,3,50,100,29))
-        labels = Variable(labels)
-        # Clear gradients
-        optimizer.zero_grad()
-        # Forward propagation
-        outputs = model(train)
-        # Calculate softmax and ross entropy loss
-        loss = error(outputs, labels)
-        # Calculating gradients
-        loss.backward()
-        # Update parameters
-        optimizer.step()
+        # print(images.shape)
+        batch_size = images.shape[0]
+        if batch_size == 10:
+            # train = Variable(images.view(10,3,50,100,29))
+            
+            # train = Variable(images)
+            labels = Variable(labels)
+            # Clear gradients
+            optimizer.zero_grad()
+            # Forward propagation
+            outputs = model(images)
+            # Calculate softmax and ross entropy loss
+            loss = error(outputs, labels)
+            # Calculating gradients
+            loss.backward()
+            # Update parameters
+            optimizer.step()
         
-        count += 1
-        if count % 50 == 0:
+            count += 1
+        if count % 10 == 0:
             # Calculate Accuracy         
             correct = 0
             total = 0
             # Iterate through test dataset
             for images, labels in test_loader:
-                
-                test = Variable(images.view(10,3,50,100,29))
-                # Forward propagation
-                outputs = model(test)
-
-                # Get predictions from the maximum value
-                predicted = torch.max(outputs.data, 1)[1]
-                
-                # Total number of labels
-                total += len(labels)
-                correct += (predicted == labels).sum()
+                batch_size = images.shape[0]
+                if batch_size == 10: 
+                    # test = Variable(images.view(batch_size,3,50,100,29))
+                    # test = Variable(images)
+                    # print(test.shape)
+                    # Forward propagation
+                    outputs = model(images)
+                    print(outputs)
+    
+                    # Get predictions from the maximum value
+                    predicted = torch.max(outputs, 1)[1]
+                    
+                    # Total number of labels
+                    total += len(labels)
+                    correct += (predicted == labels).sum()
             
             accuracy = 100 * correct / float(total)
             
@@ -231,6 +257,12 @@ for epoch in range(num_epochs):
             loss_list.append(loss.data)
             iteration_list.append(count)
             accuracy_list.append(accuracy)
-        if count % 500 == 0:
             # Print Loss
-            print('Iteration: {}  Loss: {}  Accuracy: {} %'.format(count, loss.data, accuracy))
+            print('iteration: {}  Loss: {}  Accuracy: {} %'.format(i, loss.data, accuracy))
+    # Print Loss
+    print("--------------------------------------------------------")
+    print('Epoch: {}  Loss: {}  Accuracy: {} %'.format(epoch, loss.data, accuracy))
+
+
+
+#%%
