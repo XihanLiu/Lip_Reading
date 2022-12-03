@@ -68,13 +68,13 @@ class CNN(nn.Module):
         return out
 
 class RNN(nn.Module): #Check RNN inputs for classification task
-    def __init__(self,batch_sizes = 5,numLayers = 1, numInputs = 100,numNeurons = 20,numOutputs=10):
+    def __init__(self,batch_sizes = 5,numLayers = 1, numInputs = 29,numNeurons = 29,numOutputs=1):
         super(RNN,self).__init__()
 
-        self.numInputs = numInputs
-        self.numOutputs = numOutputs
-        self.numNeuros = numNeurons
-        self.batch_sizes = batch_sizes
+        # self.numInputs = numInputs
+        # self.numOutputs = numOutputs
+        # self.numNeuros = numNeurons
+        # self.batch_sizes = batch_sizes
         self.rnn = nn.RNN(numInputs, numNeurons,numLayers)
         self.fc = nn.Linear(numNeurons,numOutputs)
     
@@ -101,4 +101,4 @@ class RNN(nn.Module): #Check RNN inputs for classification task
 
         return out
 
-
+# print(RNN())
