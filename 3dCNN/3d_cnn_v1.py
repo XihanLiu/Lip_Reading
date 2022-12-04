@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import os 
+import cv2
 
 #for reading and displaying images
 from skimage.io import imread
@@ -36,7 +37,7 @@ from numpy.linalg import norm
 
 
 #%%
-PATH_ROOT = "D:/Study/Master/Semaster_1/extracted/TRAIN/Lip_3dMatrix/train" # path to the 3d_matrix root
+PATH_ROOT = "D:/Study/Master/Semaster_1/extracted/TRAIN/Lip_frameByFrame" # path to the 3d_matrix root
 DatasetSize = "small"
 DatasetType = "III"
 # if type I, II, III
@@ -68,24 +69,21 @@ def constuct_Dataset_withSplitingRatio(PathRoot, data_dirc, Dataset_type, spliti
         label_string_list.append(label_id)
         for j, video_id in tqdm(enumerate(os.listdir(Label_root))):
             if ".mp4" in video_id and video_id[0] != ".":
-                Data_current = loadmat(Label_root+'/'+video_id+'/'+data_dirc+"/_3dType"+Dataset_type)
-                Data_current_keys = list(Data_current.keys())
-                Data_current = Data_current[Data_current_keys[3]]
-                num_frames, num_rows, num_coloumns, num_channels = Data_current.shape
-                # Data_current = Data_current.reshape(num_channels, num_rows,num_coloumns,num_frames)
-                # Data_current = Data_current.reshape(num_rows*num_coloumns, num_frames,num_channels) # (50*100, 29, 3)
-                # Data_current = Data_current/ norm(Data_current,axis=0)
-                Data_current_reshaped = np.zeros((num_channels,num_rows,num_coloumns,num_frames)).astype('uint8')
-                for m in range(num_frames):
-                    for n in range(num_channels):
-                        Data_current_reshaped[n,:,:,n] = Data_current[m,:,:,n]
-                # Data_current = Data_current.reshape(num_rows,num_coloumns,num_frames,num_channels)
-                
-                
+                image_folder_dirc = Label_root+'/'+video_id+'/'+data_dirc
+                num_frames = len(os.listdir(image_folder_dirc))
+                for m, image_id in enumerate(os.listdir(image_folder_dirc)):
+                    if ".jpg" in image_id and image_id[0] != ".":
+                        current_image = plt.imread(image_folder_dirc+'/'+image_id)
+                        if m == 0:
+                            single_image_num_rows, single_image_num_cols, single_image_num_chennels =  current_image.shape
+                            same_label_image = np.ones((single_image_num_chennels, single_image_num_rows, single_image_num_cols,num_frames)).astype('uint8')
+                        same_label_image[:,:,:,m] = current_image.reshape(single_image_num_chennels, single_image_num_rows, single_image_num_cols)
+                    else:
+                        os.remove(Label_root+'/'+video_id)
                 if j < num_train:
-                    TrainData_list.append(Data_current_reshaped)
+                    TrainData_list.append(same_label_image)
                 else: 
-                    TestData_list.append(Data_current_reshaped)
+                    TestData_list.append(same_label_image)
             else: 
                  os.remove(Label_root+'/'+video_id)
     return np.array(TrainData_list).astype("uint8"), np.array(TestData_list).astype("uint8"), train_label[:,0], test_label[:,0], label_string_list
@@ -108,9 +106,17 @@ X_train, X_test, targets_train, targets_test, label_string_list = constuct_Datas
 #%%
 # X_train = normalization(X_train)
 # X_test = normalization(X_test)
-# #%%
-# temp = X_train[0,:,:,:,0]
-# plt.imshow(temp[0,:,:])
+#%%
+temp = X_train[1,:,:,:,18]
+temp2 = np.ones((25,50,3))
+
+for i in range(temp.shape[0]):
+    temp2[:,:,i] = temp[i,:,:]
+    plt.imshow(temp[i,:,:])
+    plt.show()
+plt.imshow(temp2.astype('uint8'))
+# temp_gray = cv2.cvtColor(temp.reshape(25,50,3), cv2.COLOR_RGB2GRAY)
+
 #%%
 #convert all the variables to pytorch tensor format
 #X_train should have shape (num_of_dataset,50,100,29,3) and targets_train(num_of_dataset,1)
