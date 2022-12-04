@@ -38,8 +38,8 @@ from numpy.linalg import norm
 from scipy.io import savemat
 
 #%%
-PATH_ROOT = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/formated_dataset/TRAIN/small/typeII' # path to the 3d_matrix root
-data_type = "_II"
+PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeIII' # path to the 3d_matrix root
+data_type = "_III"
 data_size = "small"
 
 def loadConstructedDataset(PATH):
@@ -65,10 +65,10 @@ def normalization(X):
                 X_out[i,c,:,:,j] = normed_image
     return X_out
 #%% test field
-X_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_X_train")
-X_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_X_test")
-targets_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_test").flatten()
-targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_train").flatten()
+X_train = loadConstructedDataset(PATH_ROOT+"/Lip_frameByFrame3d_"+data_size+data_type+"_X_train")
+X_test = loadConstructedDataset(PATH_ROOT+"/Lip_frameByFrame3d_"+data_size+data_type+"_X_test")
+targets_test = loadConstructedDataset(PATH_ROOT+"/Lip_frameByFrame3d_"+data_size+data_type+"_targets_test").flatten()
+targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_frameByFrame3d_"+data_size+data_type+"_targets_train").flatten()
 # X_train, X_test, targets_train, targets_test, label_string_list = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.9)
 #%%
 X_train = normalization(X_train)
