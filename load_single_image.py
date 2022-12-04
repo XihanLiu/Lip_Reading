@@ -15,12 +15,12 @@ print(tensor.shape)
 test = CNN()
 CNN_result = test(tensor)
 print(CNN_result.shape)
-CNN_result= CNN_result.reshape(1,100)
+# CNN_result= CNN_result.reshape(1,100)
 
 
-test_RNN = RNN()
-RNN_result = test_RNN(CNN_result)
-print(RNN_result.shape)
+# test_RNN = RNN()
+# RNN_result = test_RNN(CNN_result)
+# print(RNN_result.shape)
 
 
 

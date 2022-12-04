@@ -39,8 +39,8 @@ from scipy.io import savemat
 
 #%%
 PATH_ROOT = '/Users/liuxihan/Desktop/Lip_Reading/Data/Lip_frameByFrame' # path to the 3d_matrix root
-DatasetSize = "small"
-DatasetType = "III"
+DatasetSize = "standard"
+DatasetType = "I"
 # if type I, II, III
 if len(DatasetSize) != 0:
     Data_dirc = DatasetSize+"/type"+DatasetType
@@ -88,7 +88,7 @@ def constuct_Dataset_withSplitingRatio(PathRoot, data_dirc, Dataset_type, spliti
                     else: 
                         TestData_list.append(same_label_image)
             else: 
-                 os.remove(Label_root+'/'+video_id)
+                os.remove(Label_root+'/'+video_id)
         
     TrainData_array = np.array(TrainData_list).astype("uint8")
     TestData_array = np.array(TestData_list).astype("uint8")
@@ -111,17 +111,17 @@ def normalization(X):
 #%% test field
 X_train, X_test, targets_train, targets_test, label_string_list = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.9)
 #%% save file
-mdic_X_train = {"3d_small_III_X_train": X_train}
-savemat(PATH_ROOT+"3d_small_III_X_train.mat",mdic_X_train)
+mdic_X_train = {"Lip_3d_"+ DatasetSize + DatasetType +"_X_train": X_train}
+savemat("Lip_3d_"+DatasetSize +"_"+ DatasetType+"_X_train.mat",mdic_X_train)
 
-mdic_X_test = {"3d_small_III_X_test": X_test}
-savemat(PATH_ROOT+"3d_small_III_X_test.mat",mdic_X_test)
+mdic_X_test = {"Lip_3d_"+ DatasetSize + DatasetType +"_X_test": X_test}
+savemat("Lip_3d_"+DatasetSize +"_"+ DatasetType+"_X_test.mat",mdic_X_test)
 
-mdic_targets_train = {"3d_small_III_targets_train": targets_train}
-savemat(PATH_ROOT+"3d_small_III_targets_train.mat",mdic_targets_train)
+mdic_targets_train = {"Lip_3d_"+ DatasetSize + DatasetType +"_targets_train": targets_train}
+savemat("Lip_3d_"+DatasetSize +"_"+ DatasetType+"_targets_train.mat",mdic_targets_train)
 
-mdic_targets_test = {"3d_small_III_targets_test": targets_test}
-savemat(PATH_ROOT+"3d_small_III_targets_test.mat",mdic_targets_test)
+mdic_targets_test = {"Lip_3d_"+ DatasetSize + DatasetType +"_targets_test": targets_test}
+savemat("Lip_3d_"+DatasetSize +"_"+DatasetType+"_targets_test.mat",mdic_targets_test)
 #%%
 # X_train = normalization(X_train)
 # X_test = normalization(X_test)

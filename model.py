@@ -5,7 +5,7 @@ import torch.nn as nn
 
 #suppose input image size = 3 * 50 * 100
 class CNN(nn.Module):
-    def __init__(self, numChannels=3, numClasses=100):
+    def __init__(self, numChannels=3, numClasses=1):
         """
         input: 
            numChannels: 3(RGB image)
@@ -68,7 +68,7 @@ class CNN(nn.Module):
         return out
 
 class RNN(nn.Module): #Check RNN inputs for classification task
-    def __init__(self,batch_sizes = 5,numLayers = 1, numInputs = 29,numNeurons = 29,numOutputs=1):
+    def __init__(self,batch_sizes = 5,numLayers = 1, numInputs = 29,numNeurons = 29,numOutputs=11):
         super(RNN,self).__init__()
 
         # self.numInputs = numInputs
@@ -101,4 +101,4 @@ class RNN(nn.Module): #Check RNN inputs for classification task
 
         return out
 
-# print(RNN())
+print(RNN())
