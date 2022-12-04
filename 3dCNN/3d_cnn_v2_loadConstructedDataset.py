@@ -38,9 +38,15 @@ from numpy.linalg import norm
 from scipy.io import savemat
 
 #%%
+<<<<<<< Updated upstream
 PATH_ROOT = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/formated_dataset/TRAIN/small/typeII' # path to the 3d_matrix root
 data_type = "_II"
 data_size = "small"
+=======
+PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/standard/typeIII' # path to the 3d_matrix root
+data_type = "_III"
+data_size = "standard"
+>>>>>>> Stashed changes
 
 def loadConstructedDataset(PATH):
     data_loaded_dict = loadmat(PATH)
@@ -71,17 +77,17 @@ targets_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"
 targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_train").flatten()
 # X_train, X_test, targets_train, targets_test, label_string_list = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.9)
 #%%
-X_train = normalization(X_train)
-X_test = normalization(X_test)
+# X_train = normalization(X_train)
+# X_test = normalization(X_test)
 #%%
-temp = X_train[1,:,:,:,16]
-temp2 = np.ones((25,50,3))
+# temp = X_train[1,:,:,:,16]
+# temp2 = np.ones((50,100,3))
 
-for i in range(temp.shape[0]):
-    temp2[:,:,i] = temp[i,:,:]
-    plt.imshow(temp[i,:,:])
-    plt.show()
-plt.imshow(temp2)
+# for i in range(temp.shape[0]):
+#     temp2[:,:,i] = temp[i,:,:]
+#     plt.imshow(temp[i,:,:])
+#     plt.show()
+# plt.imshow(temp2.astype('uint8'))
 # temp_gray = cv2.cvtColor(temp.reshape(25,50,3), cv2.COLOR_RGB2GRAY)
 
 #%%
@@ -120,23 +126,23 @@ class CNNModel(nn.Module):
   def __init__(self):
     super(CNNModel,self).__init__()
 
-    self.conv_layer1=self._conv_layer_set(3,32)
+    self.conv_layer1=self._conv_layer_set(3,16)
     #50-2=48
     #100-2=98
     #29-2=27
     #24，49，13
-    self.conv_layer2=self._conv_layer_set(32,64)
+    self.conv_layer2=self._conv_layer_set(16,32)
     #24-2=22
     #49-2=47
     #13-2=11
     #11，23，5
-    self.conv_layer3=self._conv_layer_set(64,128)
+    self.conv_layer3=self._conv_layer_set(32,16)
     #4,10,1
-    self.fc1=nn.Linear(14080, 128)
-    self.fc2 = nn.Linear(128, 64)
+    self.fc1=nn.Linear(7040, 2048)
+    self.fc2 = nn.Linear(2048, 64)
     self.fc3=nn.Linear(64,num_classes)
     self.relu = nn.LeakyReLU()
-    self.batch=nn.BatchNorm1d(128)
+    self.batch=nn.BatchNorm1d(2048)
     self.drop=nn.Dropout(p=0.15)        
         
   def _conv_layer_set(self, in_c, out_c):
