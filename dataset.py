@@ -67,12 +67,12 @@ class LipDataset(Dataset):
         tensor = convert_tensor(select_frame)
         return tensor,label
 
-# Output = LipDataset(single_video_frames_dir)
-# Size = Output.size()
+Output = LipDataset(single_video_frames_dir)
+Size = Output.size()
 
-# for group in range(Size):
-#     names,label,length = Output.getnames(group)
-#     for frame in range(length):
-#         train_tensor,train_label = Output.getitems(group,frame)
-        #print(train_tensor.shape,train_label) # Check output: "torch.Size([3, 50, 100]) AROUND"
+for group in range(Size):
+    names,label,length = Output.getnames(group)
+    for frame in range(length):
+        train_tensor,train_label = Output.getitems(group,frame)
+        # print(train_tensor.shape,train_label) # Check output: "torch.Size([2, 50, 100]) AROUND"
         
