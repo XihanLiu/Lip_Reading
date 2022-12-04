@@ -23,6 +23,8 @@ import h5py
 import shutil
 from dataset import LipDataset
 from model import CNN,RNN
+from torchvision import transforms
+convert_tensor = transforms.ToTensor()
 #%%
 def constuct_Dataset_withSplitingRatio(PathRoot, data_dirc, Dataset_type, spliting_ratio): 
     label_string_list = []
@@ -45,25 +47,24 @@ def constuct_Dataset_withSplitingRatio(PathRoot, data_dirc, Dataset_type, spliti
         for j, video_id in tqdm(enumerate(os.listdir(Label_root))):
             if ".mp4" in video_id and video_id[0] != ".":
                 Data_Frames = natsort.natsorted(os.listdir(Label_root+'/'+video_id+'/'+data_dirc))
-                
                 for Data_Frame in Data_Frames:
-                    # print(os.path.join(Label_root+'/'+video_id+'/'+data_dirc,Data_Frame))
                     Data_current = Image.open(os.path.join(Label_root+'/'+video_id+'/'+data_dirc,Data_Frame))
-                    frame_list.append(Data_current)
+                    Data_current_Tensor = convert_tensor(Data_current)
                     Data_current.close()
-                
-                # num_frames = len(frame_list)
-                # num_rows, num_coloumns = Data_current.size
-                # num_channels = len(Data_current.getbands())
-                # Data_current = Data_current.reshape(num_rows, num_coloumns,num_frames,num_channels)
+                    frame_list.append(Data_current_Tensor)
+               
+                frame_stack = torch.stack(frame_list)
+                print(frame_stack.shape)
                 if j < num_train:
                     TrainData_list.append(frame_list)
+                    # TrainData_list.append(torch.Tensor(frame_list))
                 else: 
                     TestData_list.append(frame_list)
+                    # TestData_list.append(frame_list)
             else: 
                  os.remove(Label_root+'/'+video_id)
-    print(np.array(TrainData_list))
-    return np.array(TrainData_list), np.array(TestData_list), train_label[:,0], test_label[:,0]
+    
+    return TrainData_list, TestData_list, train_label[:,0], test_label[:,0]
     
     
 #%% test field
@@ -80,8 +81,10 @@ else:
     Data_dirc = DatasetType
     # print(Data_dirc)
 X_train, X_test, targets_train, targets_test = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.8)
+X_train = np.asarray(X_train)
+# torch.Tensor(X_train)
 
-
+print(X_train.shape)
 #%%
 #convert all the variables to pytorch tensor format
 #X_train should have shape (num_of_dataset,50,100,29,3) and targets_train(num_of_dataset,1)
