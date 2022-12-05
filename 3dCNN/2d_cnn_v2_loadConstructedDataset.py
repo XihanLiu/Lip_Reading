@@ -115,35 +115,37 @@ del test
 #implement the model
 num_classes=11
 #50*100*29
-#create CNN model
+#create CNN model 
+# CNNModel (best 63%)
 class CNNModel(nn.Module):
   def __init__(self):
     super(CNNModel,self).__init__()
 
-    self.conv_layer1=self._conv_layer_set(3,32)
+    self.conv_layer1=self._conv_layer_set(3,16)
     #50-2=48
     #100-2=98
     #29-2=27
     #24，49，13
-    self.conv_layer2=self._conv_layer_set(32,64)
+    self.conv_layer2=self._conv_layer_set(16,32)
     #24-2=22
     #49-2=47
     #13-2=11
     #11，23，5
-    self.conv_layer3=self._conv_layer_set(64,128)
+    self.conv_layer3=self._conv_layer_set(32,16)
     #4,10,1
-    self.fc1=nn.Linear(14080, 128)
-    self.fc2 = nn.Linear(128, 64)
-    self.fc3=nn.Linear(64,num_classes)
+    self.fc1=nn.Linear(50176, 2048)
+    self.fc2 = nn.Linear(2048, 64)
+    self.fc3=nn.Linear(2048,num_classes)
     self.relu = nn.LeakyReLU()
-    self.batch=nn.BatchNorm1d(128)
-    self.drop=nn.Dropout(p=0.15)        
+    self.sigmoid = nn.Sigmoid()
+    self.batch=nn.BatchNorm1d(50176)
+    self.drop=nn.Dropout(p=0.12)        
         
   def _conv_layer_set(self, in_c, out_c):
         conv_layer = nn.Sequential(
-        nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 3), padding=0),
+        nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 2), padding=0),
         nn.LeakyReLU(),
-        nn.MaxPool3d((2, 2, 2)),
+        nn.MaxPool3d((3, 3, 1)),
         )
         return conv_layer
     
@@ -151,16 +153,17 @@ class CNNModel(nn.Module):
   def forward(self, x):
         # Set 1
         out = self.conv_layer1(x)
-        out = self.conv_layer2(out)
+        # out = self.conv_layer2(out)
         out = self.relu(out)
         # print(out.shape)
         # out = self.conv_layer3(out)
         out = out.view(out.size(0), -1)
+        out = self.batch(out)
         out = self.fc1(out)
         out = self.relu(out)
-        out = self.batch(out)
+        
         out = self.drop(out)
-        out = self.fc2(out)
+        # out = self.fc2(out)
         out = self.fc3(out)
         out = self.relu(out)
         

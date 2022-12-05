@@ -63,9 +63,10 @@ def normalization(X):
         for j in range(X.shape[4]):
             current_image = X[i,:,:,:,j]
             num_channel, num_row, num_column = current_image.shape
-            pixel_max = np.max(current_image)
+            
             for c in range(num_channel):
                 # current_image = current_image.flatten()
+                pixel_max = np.max(current_image[c,:,:])
                 normed_image = current_image[c,:,:]/pixel_max
                 X_out[i,c,:,:,j] = normed_image
     return X_out
@@ -173,6 +174,187 @@ class CNNModel(nn.Module):
         out = self.relu(out)
         
         return out
+
+
+# max 64%
+class CNNModel_2(nn.Module):
+    def __init__(self):
+      super(CNNModel_2,self).__init__()
+    
+      self.conv_layer1=self._conv_layer_set(3,128)
+      #50-2=48
+      #100-2=98
+      #29-2=27
+      #24，49，13
+      self.conv_layer2=self._conv_layer_set_2(128,32)
+      #24-2=22
+      #49-2=47
+      #13-2=11
+      #11，23，5
+      self.conv_layer3=self._conv_layer_set(32,16)
+      #4,10,1
+      self.fc1=nn.Linear(3584, 2048)
+      self.fc2 = nn.Linear(2048, 64)
+      self.fc3=nn.Linear(3584,num_classes)
+      self.relu = nn.LeakyReLU()
+      self.sigmoid = nn.Sigmoid()
+      self.batch=nn.BatchNorm1d(3584)
+      self.drop=nn.Dropout(p=0.12)        
+          
+    def _conv_layer_set(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 2), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((3, 3, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_2(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 1), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((3, 3, 1)),
+          )
+          return conv_layer
+    
+
+    def forward(self, x):
+          # Set 1
+          out = self.conv_layer1(x)
+          out = self.conv_layer2(out)
+          out = self.relu(out)
+          # print(out.shape)
+          # out = self.conv_layer3(out)
+          out = out.view(out.size(0), -1)
+          out = self.batch(out)
+          # out = self.fc1(out)
+          # out = self.relu(out)
+          
+          out = self.drop(out)
+          # out = self.fc2(out)
+          out = self.fc3(out)
+          out = self.relu(out)
+          
+          return out
+
+# max 68%
+class CNNModel_3(nn.Module):
+    def __init__(self):
+      super(CNNModel_3,self).__init__()
+    
+      self.conv_layer1=self._conv_layer_set(3,256)
+      self.conv_layer2=self._conv_layer_set_2(256,128)
+      self.conv_layer3=self._conv_layer_set_3(128,16)
+      self.fc1=nn.Linear(14336, 2048)
+      self.fc2 = nn.Linear(2048, 64)
+      self.fc3=nn.Linear(14336,num_classes)
+      self.relu = nn.LeakyReLU()
+      self.sigmoid = nn.Sigmoid()
+      self.batch=nn.BatchNorm1d(14336)
+      self.drop=nn.Dropout(p=0.12)        
+          
+    def _conv_layer_set(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 2), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((3, 3, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_2(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 1), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((3, 3, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_3(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(2, 2, 1), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((2, 2, 1)),
+          )
+          return conv_layer
+
+    def forward(self, x):
+          # Set 1
+          out = self.conv_layer1(x)
+          out = self.conv_layer2(out)
+          out = self.relu(out)
+          # print(out.shape)
+          # out = self.conv_layer3(out)
+          out = out.view(out.size(0), -1)
+          out = self.batch(out)
+          # out = self.fc1(out)
+          # out = self.relu(out)
+          
+          out = self.drop(out)
+          # out = self.fc2(out)
+          out = self.fc3(out)
+          out = self.relu(out)
+          
+          return out
+      
+# max 61%
+class CNNModel_4(nn.Module):
+    def __init__(self):
+      super(CNNModel_4,self).__init__()
+    
+      self.conv_layer1=self._conv_layer_set(3,256)
+      self.conv_layer2=self._conv_layer_set_2(256,128)
+      self.conv_layer3=self._conv_layer_set_3(128,16)
+      # self.conv_layer4=self._conv_layer_set_3(56,16)
+      self.fc1=nn.Linear(4992, 2048)
+      # self.fc2 = nn.Linear(2048, 64)
+      self.fc3=nn.Linear(4992,num_classes)
+      self.relu = nn.LeakyReLU()
+      self.sigmoid = nn.Sigmoid()
+      self.batch=nn.BatchNorm1d(4992)
+      self.drop=nn.Dropout(p=0.12)        
+          
+    def _conv_layer_set(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 3), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((3, 3, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_2(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 2), padding=0),
+          nn.LeakyReLU(),
+          # nn.MaxPool3d((2, 2, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_3(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(2, 2, 1), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((2, 2, 1)),
+          )
+          return conv_layer
+
+    def forward(self, x):
+          # Set 1
+          out = self.conv_layer1(x)
+          out = self.conv_layer2(out)
+          out = self.relu(out)
+          # print(out.shape)
+          out = self.conv_layer3(out)
+          out = out.view(out.size(0), -1)
+          out = self.batch(out)
+          # out = self.fc1(out)
+          # out = self.relu(out)
+          
+          out = self.drop(out)
+          # out = self.fc2(out)
+          out = self.fc3(out)
+          out = self.relu(out)
+          
+          return out
 #%%
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
@@ -184,13 +366,13 @@ num_epochs = 20
 
 
 # Create CNN
-model = CNNModel().to(device)
+model = CNNModel_4().to(device)
 
 # Cross Entropy Loss 
 error = nn.CrossEntropyLoss()
 
 # SGD Optimizer
-learning_rate = 0.0002
+learning_rate = 0.00001
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 #%%
