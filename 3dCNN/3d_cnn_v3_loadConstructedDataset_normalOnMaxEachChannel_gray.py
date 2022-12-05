@@ -42,8 +42,8 @@ from scipy.io import savemat
 # data_type = "_II"
 # data_size = "small"
 
-PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeII' # path to the 3d_matrix root
-data_type = "_II"
+PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeI' # path to the 3d_matrix root
+data_type = "_I"
 data_size = "small"
 
 
@@ -52,7 +52,31 @@ def loadConstructedDataset(PATH):
     data_loaded_keys = list(data_loaded_dict.keys())[3]
     data_loaded = data_loaded_dict[data_loaded_keys]
     return data_loaded
+
+def RGB2GRAY(RGBMatrix):
+    num_of_dataset, channels, num_rows, num_cols, frames = RGBMatrix.shape
+    Gray_matrix = np.ones((num_of_dataset, 1, num_rows, num_cols, frames))
+    for i in tqdm(range(num_of_dataset)):
+        for f in range(frames):
+            RGB_Image = ToCV2ImageShape(RGBMatrix[i,:,:,:,f])
+            Gray_matrix[i,0,:,:,f] = cv2.cvtColor(RGB_Image, cv2.COLOR_RGB2GRAY)
+    return Gray_matrix
     
+def ToCV2ImageShape(PytorchImage):
+    num_channels, num_row, num_col = PytorchImage.shape
+    CV2Image = np.ones((num_row, num_col,num_channels)).astype('uint8')
+    for i in range(num_channels):
+        CV2Image[:,:,i] = PytorchImage[i,:,:]
+    return CV2Image
+
+    
+def ToPytorchImageShape(CV2Image):
+    num_row, num_col, num_channels = CV2Image.shape
+    PytorchImage = np.ones((num_channels, num_row, num_col)).astype('uint8')
+    for i in range(num_channels):
+        PytorchImage[i,:,:] = CV2Image[:,:,i] 
+    return PytorchImage
+
 def normalization(X):
     '''
     X (#of all dataset, 3, 50, 100, 29)
@@ -72,7 +96,9 @@ def normalization(X):
     return X_out
 #%% test field
 X_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_X_train")
+X_train = RGB2GRAY(X_train)
 X_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_X_test")
+X_test = RGB2GRAY(X_test)
 targets_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_test").flatten()
 targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_train").flatten()
 # X_train, X_test, targets_train, targets_test, label_string_list = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.9)
@@ -127,7 +153,7 @@ class CNNModel(nn.Module):
   def __init__(self):
     super(CNNModel,self).__init__()
 
-    self.conv_layer1=self._conv_layer_set(3,16)
+    self.conv_layer1=self._conv_layer_set(1,16)
     #50-2=48
     #100-2=98
     #29-2=27
@@ -242,7 +268,7 @@ class CNNModel_3(nn.Module):
     def __init__(self):
       super(CNNModel_3,self).__init__()
     
-      self.conv_layer1=self._conv_layer_set(3,256)
+      self.conv_layer1=self._conv_layer_set(1,256)
       self.conv_layer2=self._conv_layer_set_2(256,128)
       self.conv_layer3=self._conv_layer_set_3(128,16)
       self.fc1=nn.Linear(14336, 2048)
@@ -361,20 +387,20 @@ class CNNModel_5(nn.Module):
     def __init__(self):
       super(CNNModel_5,self).__init__()
     
-      self.conv_layer1=self._conv_layer_set(3,256)
+      self.conv_layer1=self._conv_layer_set(1,256)
       self.conv_layer2=self._conv_layer_set_2(256,128)
       self.conv_layer3=self._conv_layer_set_3(128,16)
-      self.fc1=nn.Linear(6912, 2048)
+      self.fc1=nn.Linear(6656, 2048)
       # self.fc2 = nn.Linear(2048, 64)
       self.fc3=nn.Linear(2048,num_classes)
       self.relu = nn.LeakyReLU()
       self.sigmoid = nn.Sigmoid()
-      self.batch=nn.BatchNorm1d(6912)
+      self.batch=nn.BatchNorm1d(6656)
       self.drop=nn.Dropout(p=0.12)        
           
     def _conv_layer_set(self, in_c, out_c):
           conv_layer = nn.Sequential(
-          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 2), padding=0),
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 3), padding=0),
           nn.LeakyReLU(),
           nn.MaxPool3d((3, 3, 1)),
           )
@@ -432,7 +458,7 @@ model = CNNModel_5().to(device)
 error = nn.CrossEntropyLoss()
 
 # SGD Optimizer
-learning_rate = 0.0001
+learning_rate = 0.00005
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 #%%

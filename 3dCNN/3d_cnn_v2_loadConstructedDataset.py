@@ -46,6 +46,15 @@ PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeIII' # 
 data_type = "_III"
 data_size = "small"
 
+def RGB2GRAY(RGBMatrix):
+    num_of_dataset, channels, num_rows, num_cols, frames = RGBMatrix.shape
+    Gray_matrix = np.ones((num_of_dataset, frames, num_rows, num_cols))
+    for i in tqdm(range(num_of_dataset)):
+        for f in range(frames):
+            RGB_Image = ToCV2ImageShape(RGBMatrix[i,:,:,:,f])
+            Gray_matrix[i,f,:,:] = cv2.cvtColor(RGB_Image, cv2.COLOR_RGB2GRAY)
+    return Gray_matrix
+
 
 def loadConstructedDataset(PATH):
     data_loaded_dict = loadmat(PATH)
