@@ -38,13 +38,13 @@ from numpy.linalg import norm
 from scipy.io import savemat
 
 #%%
-# PATH_ROOT = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/formated_dataset/TRAIN/small/typeII' # path to the 3d_matrix root
-# data_type = "_II"
-# data_size = "small"
-
-PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeIII' # path to the 3d_matrix root
-data_type = "_III"
+PATH_ROOT = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.520.612/Lip_Reading/formated_dataset/TRAIN/small/typeII' # path to the 3d_matrix root
+data_type = "_II"
 data_size = "small"
+
+# PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeIII' # path to the 3d_matrix root
+# data_type = "_III"
+# data_size = "small"
 Trained_model_Root = "Trained_model"
 
 
@@ -72,10 +72,10 @@ def normalization(X):
                 X_out[i,c,:,:,j] = normed_image
     return X_out
 #%% test field
-X_train = loadConstructedDataset(PATH_ROOT+"/Lip_frames_"+data_size+data_type+"_X_train")
-X_test = loadConstructedDataset(PATH_ROOT+"/Lip_frames_"+data_size+data_type+"_X_test")
-targets_test = loadConstructedDataset(PATH_ROOT+"/Lip_frames_"+data_size+data_type+"_targets_test").flatten()
-targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_frames_"+data_size+data_type+"_targets_train").flatten()
+X_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_X_train")
+X_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_X_test")
+targets_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_test").flatten()
+targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_train").flatten()
 # X_train, X_test, targets_train, targets_test, label_string_list = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.9)
 #%%
 X_train = normalization(X_train)
@@ -478,6 +478,7 @@ class CNNModel_6(nn.Module):
 #%%
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
+device = 'cpu'
 #%%
 
 #Definition of hyperparameters
@@ -542,6 +543,7 @@ for epoch in range(num_epochs):
             if batch_size == 32: 
                 # Forward propagation
                 outputs = model(images)
+                print(images.shape)
                 # print(outputs)
                 # Get predictions from the maximum value
                 predicted = torch.max(outputs, 1)[1]
