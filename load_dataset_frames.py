@@ -24,8 +24,8 @@ from fit import fit
 from scipy.io import savemat
 #%%
 PATH_ROOT = '/Users/liuxihan/Desktop/Lip_Reading/Data/Lip_frameByFrame' # path to the 3d_matrix root
-DatasetSize = "standard"
-DatasetType = "I"
+DatasetSize = "small"
+DatasetType = "III"
 # if type I, II, III
 if len(DatasetSize) != 0:
     Data_dirc = DatasetSize+"/type"+DatasetType

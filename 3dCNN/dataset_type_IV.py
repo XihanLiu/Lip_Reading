@@ -71,13 +71,15 @@ def constuct_Dataset_withSplitingRatio(PathRoot, data_dirc, Dataset_type, spliti
                             # current_image = plt.imread(image_folder_dirc+'/'+image_id)
                             if m == 0:
                                 single_image_num_rows, single_image_num_cols =  current_image.shape
-                                # same_label_image = np.ones((single_image_num_rows, single_image_num_cols,num_frames)).astype('uint8')
+                                same_label_image = np.ones((single_image_num_rows, single_image_num_cols,num_frames)).astype('uint8')
+                            same_label_image[:,:,m] = current_image
+                            
                         else:
                             os.remove(Label_root+'/'+video_id)
                     if j < num_train:
-                        TrainData_list.append(current_image)
+                        TrainData_list.append(same_label_image)
                     else: 
-                        TestData_list.append(current_image)
+                        TestData_list.append(same_label_image)
             else: 
                 os.remove(Label_root+'/'+video_id)
         
