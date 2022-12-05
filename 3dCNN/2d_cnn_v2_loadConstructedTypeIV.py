@@ -38,9 +38,9 @@ from numpy.linalg import norm
 from scipy.io import savemat
 
 #%%
-PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeIII' # path to the 3d_matrix root
-data_type = "_III"
-data_size = "small"
+PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN' # path to the 3d_matrix root
+data_type = "typeIV"
+data_size = ""
 
 def loadConstructedDataset(PATH):
     data_loaded_dict = loadmat(PATH)
@@ -74,13 +74,13 @@ def ToPytorchImageShape(CV2Image):
         
 def normalization(X):
     '''
-    X (#of all dataset, 3, 50, 100, 29)
+    X (#of all dataset, 50, 100, 29)
     '''
-    shape_of_X = X.shape
-    X_out = np.ones((shape_of_X))
+    num_data, num_row, num_col, num_frame = X.shape
+    X_out = np.ones((num_data, num_frame, num_row, num_col))
     for i in tqdm(range(X.shape[0])):
-        for j in range(X.shape[1]):
-            current_image = X[i,j,:,:]
+        for j in range(X.shape[3]):
+            current_image = X[i,:,:,j]
             # num_row, num_column = current_image.shape
             pixel_max = np.max(current_image)
             normed_image = current_image[:,:]/pixel_max
@@ -88,9 +88,9 @@ def normalization(X):
     return X_out
 #%% test field
 X_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_X_train")
-X_train = RGB2GRAY(X_train)
+# X_train = RGB2GRAY(X_train)
 X_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_X_test")
-X_test = RGB2GRAY(X_test)
+# X_test = RGB2GRAY(X_test)
 targets_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_test").flatten()
 targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_train").flatten()
 # X_train, X_test, targets_train, targets_test, label_string_list = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.9)
@@ -98,8 +98,8 @@ targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+
 X_train = normalization(X_train)
 X_test = normalization(X_test)
 #%%
-temp = X_train[1,16,:,:]
-plt.imshow(temp)
+# temp = X_train[1,16,:,:]
+# plt.imshow(temp)
 # temp_gray = cv2.cvtColor(temp.reshape(25,50,3), cv2.COLOR_RGB2GRAY)
 
 #%%
@@ -144,10 +144,10 @@ class CNNModel(nn.Module):
     #4,10,1
     # self.fc1=nn.Linear(50176, 2048)
     # self.fc2 = nn.Linear(2048, 64)
-    self.fc1=nn.Linear(7904,num_classes)
+    self.fc1=nn.Linear(49280,num_classes)
     self.relu = nn.LeakyReLU()
     self.sigmoid = nn.Sigmoid()
-    self.batch=nn.BatchNorm1d(7904)
+    self.batch=nn.BatchNorm1d(49280)
     self.drop=nn.Dropout(p=0.12)        
         
   def _conv_layer_set(self, in_c, out_c):
@@ -175,7 +175,7 @@ class CNNModel(nn.Module):
 
 class CNNModel_2(nn.Module):
     def __init__(self):
-      super(CNNModel,self).__init__()
+      super(CNNModel_2,self).__init__()
       self.conv_layer1=self._conv_layer_set(29,1028)
       self.conv_layer2=self._conv_layer_set_1(1028,256)
       self.conv_layer3=self._conv_layer_set_1(256,64)
@@ -190,9 +190,9 @@ class CNNModel_2(nn.Module):
           
     def _conv_layer_set(self, in_c, out_c):
           conv_layer = nn.Sequential(
-          nn.Conv2d(in_c, out_c, kernel_size=(5, 5), stride = 1, padding=0),
+          nn.Conv2d(in_c, out_c, kernel_size=(10, 10), stride = 1, padding=0),
           nn.LeakyReLU(),
-          nn.MaxPool2d((2, 2),stride=1),
+          nn.MaxPool2d((3, 3),stride=1),
           )
           return conv_layer
     
@@ -220,32 +220,32 @@ class CNNModel_2(nn.Module):
       
 class CNNModel_3(nn.Module):
     def __init__(self):
-      super(CNNModel,self).__init__()
+      super(CNNModel_3,self).__init__()
       self.conv_layer1=self._conv_layer_set(29,29)
       self.conv_layer2=self._conv_layer_set_1(29,29)
       self.conv_layer3=self._conv_layer_set_1(29,29)
       #4,10,1
       # self.fc1=nn.Linear(50176, 2048)
       # self.fc2 = nn.Linear(2048, 64)
-      self.fc1=nn.Linear(34944,num_classes)
+      self.fc1=nn.Linear(52374,num_classes)
       self.relu = nn.LeakyReLU()
       self.sigmoid = nn.Sigmoid()
-      self.batch=nn.BatchNorm1d(34944)
+      self.batch=nn.BatchNorm1d(52374)
       self.drop=nn.Dropout(p=0.12)        
           
     def _conv_layer_set(self, in_c, out_c):
           conv_layer = nn.Sequential(
-          nn.Conv2d(in_c, out_c, kernel_size=(5, 5), stride = 1, padding=0),
+          nn.Conv2d(in_c, out_c, kernel_size=(10, 10), stride = 1, padding=0),
           nn.LeakyReLU(),
-          nn.MaxPool2d((2, 2),stride=1),
+          nn.MaxPool2d((5, 5),stride=1),
           )
           return conv_layer
     
     def _conv_layer_set_1(self, in_c, out_c):
         conv_layer = nn.Sequential(
-        nn.Conv2d(in_c, out_c, kernel_size=(3, 3), stride = 1, padding=0),
+        nn.Conv2d(in_c, out_c, kernel_size=(5, 5), stride = 1, padding=0),
         nn.LeakyReLU(),
-        nn.MaxPool2d((2, 2),stride=1),    
+        nn.MaxPool2d((3, 3),stride=1),    
         )
         return conv_layer
     
@@ -273,7 +273,7 @@ num_epochs = 20
 
 
 # Create CNN
-model = CNNModel().to(device)
+model = CNNModel_3().to(device)
 
 # Cross Entropy Loss 
 error = nn.CrossEntropyLoss()
