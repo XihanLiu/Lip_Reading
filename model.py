@@ -74,18 +74,18 @@ class CNN(nn.Module):
         return out
 
 class RNN(nn.Module): #Check RNN inputs for classification task
-    def __init__(self,batch_sizes = 10,numLayers = 1, numInputs = 290,numNeurons = 29,numOutputs=10):
+    def __init__(self,batch_sizes = 10,numLayers = 1, numInputs = 290,numNeurons = 29,numOutputs=11):
         super(RNN,self).__init__()
 
         # self.numInputs = numInputs
         # self.numOutputs = numOutputs
-        # self.numNeuros = numNeurons
-        # self.batch_sizes = batch_sizes
+        self.numNeurons = numNeurons
+        self.batch_sizes = batch_sizes
         self.rnn = nn.RNN(input_size = numInputs, hidden_size = numNeurons,num_layers = numLayers,batch_first = True)
         self.fc = nn.Linear(numNeurons,numOutputs)
     
     def init_hidden(self):
-        self.hidden_states = None
+        self.hidden_states = torch.randn(self.batch_sizes,self.numNeurons)
 
     def forward(self, x):
         """
@@ -100,13 +100,11 @@ class RNN(nn.Module): #Check RNN inputs for classification task
             The output of RNNs.
         """
         # transforms X to dimensions: n_steps X batch_size X n_inputs
-
+        # print(x.shape)
         self.hidden = self.init_hidden()
-        
         out,self.hidden = self.rnn(x,self.hidden)
-        # print("rnn:", self.hidden.shape)
-        out = self.fc(self.hidden)
+        # print("rnn:", self.hidden.shape) #(1,29)
+        out = self.fc(out)
+        # print(out.shape)
         
-        out = out.T
         return out
-
