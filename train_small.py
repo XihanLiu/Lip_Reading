@@ -19,7 +19,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import *
-from model import CNN,RNN
+from model_small import CNN,RNN
 from fit import fit
 from scipy.io import loadmat,savemat
 
@@ -36,14 +36,14 @@ else:
     mps_device = torch.device("cpu")
 #%%
 # mps_device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(mps_device)
+# print(mps_device)
 # mps_device = 'cpu'
 #%%
 
-X_train = loadmat('Lip_frames_standard_I_X_train.mat')['Lip_frames_standardI_X_train']
-X_test = loadmat('Lip_frames_standard_I_X_test.mat')['Lip_frames_standardI_X_test']
-targets_train = loadmat('Lip_frames_standard_I_targets_train.mat')['Lip_frames_standardI_targets_train']
-targets_test = loadmat('Lip_frames_standard_I_targets_test.mat')['Lip_frames_standardI_targets_test']
+X_train = loadmat('Lip_frames_small_III_X_train.mat')['Lip_frames_smallIII_X_train']
+X_test = loadmat('Lip_frames_small_III_X_test.mat')['Lip_frames_smallIII_X_test']
+targets_train = loadmat('Lip_frames_small_III_targets_train.mat')['Lip_frames_smallIII_targets_train']
+targets_test = loadmat('Lip_frames_small_III_targets_test.mat')['Lip_frames_smallIII_targets_test']
 #%%
 #convert all the variables to pytorch tensor format
 #X_train should have shape (num_of_dataset,50,100,29,3) and targets_train(num_of_dataset,1)
@@ -92,7 +92,7 @@ RNN_model.to(mps_device)
 error = nn.CrossEntropyLoss()
 
 # SGD Optimizer
-learning_rate = 0.01
+learning_rate = 0.1
 optimizer = torch.optim.Adam(CNN_model.parameters(), lr=learning_rate)
 optimizer = torch.optim.Adam(RNN_model.parameters(), lr=learning_rate)
 #%%
@@ -105,7 +105,7 @@ iteration_list = []
 accuracy_list = []
 for epoch in range(num_epochs):
     for i, (images, labels) in enumerate(train_loader):
-        print(i)
+        # print(i)
         images,labels = images.to(mps_device),labels.to(mps_device)
         # Clear gradients
         batch_size = images.shape[0]

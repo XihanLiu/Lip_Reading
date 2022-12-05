@@ -22,23 +22,23 @@ class CNN(nn.Module):
         self.conv1=nn.Conv2d(in_channels=numChannels,out_channels=20,kernel_size=5)
         #output:((50-5)+1)*((100-5)+1) => 20 * 46 * 96
         self.relu1 = nn.ReLU()
-        self.maxpool1 = nn.MaxPool2d(kernel_size=2,stride=2)
+        self.pool1 = nn.AvgPool2d(kernel_size=2,stride=2)
         #output: 20 * 23 * 48
         
         #Second layer: Conv2d => Relu => MaxPool2d
         self.conv2=nn.Conv2d(in_channels=20,out_channels=50, kernel_size=5)
         #output: 50 * 19 * 44
         self.relu2 = nn.ReLU()
-        self.maxpool2 = nn.MaxPool2d(kernel_size=2,stride=2)
+        self.pool2 = nn.AvgPool2d(kernel_size=2,stride=2)
         #output: 50 * 9 * 22
 
         #First FC layer => ReLu layer
-        self.fc1 = nn.Linear(in_features=9900,out_features=5000)
+        self.fc1 = nn.Linear(in_features=1350,out_features=500)
         self.relu3 = nn.ReLU()
 
-        #Second FC layer => ReLu layer
-        self.fc2 = nn.Linear(in_features=5000,out_features=500)
-        self.relu4 = nn.ReLU()
+        # #Second FC layer => ReLu layer
+        # self.fc2 = nn.Linear(in_features=5000,out_features=500)
+        # self.relu4 = nn.ReLU()
 
         #Softmax Layer
         self.fc3 = nn.Linear(in_features=500, out_features=numClasses)
@@ -49,24 +49,22 @@ class CNN(nn.Module):
         #CNN branch
 
         x = self.conv1(x)
-        
         x = self.relu1(x)
-        x = self.maxpool1(x)
+        x = self.pool1(x)
         
         
         x = self.conv2(x)
         x = self.relu2(x)
-        x = self.maxpool2(x)
+        x = self.pool2(x)
         
         
         x = torch.reshape(x,(10,-1))
-        
         x = self.fc1(x)
         x = self.relu3(x)
         
         x = torch.reshape(x,(10,-1)) 
-        x = self.fc2(x)
-        x = self.relu4(x)
+        # x = self.fc2(x)
+        # x = self.relu4(x)
         
         x = self.fc3(x)
         out = self.Softmax(x) #batch_size * numChannels(features)
@@ -81,9 +79,10 @@ class RNN(nn.Module): #Check RNN inputs for classification task
         # self.numOutputs = numOutputs
         self.numNeurons = numNeurons
         self.batch_sizes = batch_sizes
-        self.rnn = nn.RNN(input_size = numInputs, hidden_size = numNeurons,num_layers = numLayers,batch_first = True)
+        self.rnn = nn.RNN(input_size = numInputs, hidden_size = numNeurons,num_layers = numLayers,batch_first = True,dropout = 0.3)
         self.fc = nn.Linear(numNeurons,numOutputs)
         self.tanh = nn.Tanh()
+        self.batch_norm = nn.BatchNorm1d(numNeurons)
     
     def init_hidden(self):
         self.hidden_states = torch.randn(self.batch_sizes,self.numNeurons)
@@ -105,6 +104,7 @@ class RNN(nn.Module): #Check RNN inputs for classification task
         self.hidden = self.init_hidden()
         out,self.hidden = self.rnn(x,self.hidden)
         # print("rnn:", self.hidden.shape) #(1,29)
+        out = self.batch_norm(out)
         out = self.fc(out)
         out = self.tanh(out)
         # print(out.shape)
