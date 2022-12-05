@@ -42,9 +42,10 @@ from scipy.io import savemat
 # data_type = "_II"
 # data_size = "small"
 
-PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeII' # path to the 3d_matrix root
-data_type = "_II"
+PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeIII' # path to the 3d_matrix root
+data_type = "_III"
 data_size = "small"
+Trained_model_Root = "Trained_model"
 
 
 def loadConstructedDataset(PATH):
@@ -71,10 +72,10 @@ def normalization(X):
                 X_out[i,c,:,:,j] = normed_image
     return X_out
 #%% test field
-X_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_X_train")
-X_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_X_test")
-targets_test = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_test").flatten()
-targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+"_targets_train").flatten()
+X_train = loadConstructedDataset(PATH_ROOT+"/Lip_frames_"+data_size+data_type+"_X_train")
+X_test = loadConstructedDataset(PATH_ROOT+"/Lip_frames_"+data_size+data_type+"_X_test")
+targets_test = loadConstructedDataset(PATH_ROOT+"/Lip_frames_"+data_size+data_type+"_targets_test").flatten()
+targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_frames_"+data_size+data_type+"_targets_train").flatten()
 # X_train, X_test, targets_train, targets_test, label_string_list = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.9)
 #%%
 X_train = normalization(X_train)
@@ -102,7 +103,7 @@ test_y=torch.from_numpy(targets_test).long()
 del targets_test
 
 #%%
-batch_size=10#the batch_size we will use for the training
+batch_size=32#the batch_size we will use for the training
 
 #pytorch train and test sets
 train=torch.utils.data.TensorDataset(train_x,train_y)
@@ -415,6 +416,65 @@ class CNNModel_5(nn.Module):
           
           return out    
 
+# max 68%
+class CNNModel_6(nn.Module):
+    def __init__(self):
+      super(CNNModel_6,self).__init__()
+    
+      self.conv_layer1=self._conv_layer_set(3,256)
+      self.conv_layer2=self._conv_layer_set_2(256,128)
+      self.conv_layer3=self._conv_layer_set_3(128,16)
+      self.fc1=nn.Linear(14336, 2048)
+      self.fc2 = nn.Linear(2048, 64)
+      self.fc3=nn.Linear(64,num_classes)
+      self.relu = nn.LeakyReLU()
+      self.sigmoid = nn.Sigmoid()
+      self.batch=nn.BatchNorm1d(14336)
+      self.drop=nn.Dropout(p=0.12)        
+          
+    def _conv_layer_set(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 2), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((3, 3, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_2(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 1), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((3, 3, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_3(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(2, 2, 1), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((2, 2, 1)),
+          )
+          return conv_layer
+
+    def forward(self, x):
+          # Set 1
+          out = self.conv_layer1(x)
+          out = self.conv_layer2(out)
+          out = self.relu(out)
+          # print(out.shape)
+          # out = self.conv_layer3(out)
+          out = out.view(out.size(0), -1)
+          out = self.batch(out)
+          out = self.fc1(out)
+          # out = self.relu(out)
+          
+          out = self.drop(out)
+          out = self.fc2(out)
+          out = self.fc3(out)
+          out = self.relu(out)
+          
+          return out
+
 #%%
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
@@ -426,13 +486,13 @@ num_epochs = 40
 
 
 # Create CNN
-model = CNNModel_5().to(device)
+model = CNNModel_6().to(device)
 
 # Cross Entropy Loss 
 error = nn.CrossEntropyLoss()
 
 # SGD Optimizer
-learning_rate = 0.0001
+learning_rate = 0.00005
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 #%%
@@ -442,19 +502,27 @@ count = 0
 loss_list = []
 iteration_list = []
 accuracy_list = []
+max_acc = 0
 for epoch in range(num_epochs):
+    train_correct = 0
+    train_total = 0 
     for i, (images, labels) in enumerate(train_loader):
         # print(images.shape)
         images, labels = images.to(device), labels.to(device)
         batch_size = images.shape[0]
-        if batch_size == 10:
+        if batch_size == 32:
             labels = Variable(labels)
             # Clear gradients
             optimizer.zero_grad()
             # Forward propagation
             outputs = model(images)
             # Calculate softmax and ross entropy loss
+            predicted = torch.max(outputs, 1)[1]
             loss = error(outputs, labels)
+            train_loss = loss.data
+            train_total += len(labels)
+            train_correct += (predicted == labels).sum()
+            
             # Calculating gradients
             loss.backward()
             # Update parameters
@@ -465,12 +533,13 @@ for epoch in range(num_epochs):
     # Calculate Accuracy         
     correct = 0
     total = 0
+    model.eval()
     with torch.no_grad():
         # Iterate through test dataset
         for images, labels in test_loader:
             images, labels = images.to(device), labels.to(device)
             batch_size = images.shape[0]
-            if batch_size == 10: 
+            if batch_size == 32: 
                 # Forward propagation
                 outputs = model(images)
                 # print(outputs)
@@ -480,16 +549,18 @@ for epoch in range(num_epochs):
                 total += len(labels)
                 correct += (predicted == labels).sum()
     accuracy = 100 * correct / float(total)
+    train_acc = (train_correct/train_total)*100
     # store loss and iteration
     loss_list.append(loss.data)
     iteration_list.append(count)
     accuracy_list.append(accuracy)
-    # # Print Loss
-    # print('iteration: {}  Loss: {}  Accuracy: {} %'.format(i, loss.data, accuracy))
-    # # Print Loss
-    # print("--------------------------------------------------------")
-    print('Epoch: {}  Loss: {}  Accuracy: {} %'.format(epoch, loss.data, accuracy))
+    if accuracy > max_acc:
+        max_acc = accuracy
+        best_model = model
+        print("---- NEW BEST")
+    print('Epoch:{}  Train_Loss:{} Train_Acc :{}% Val_Loss:{}  Val_Acc:{}%'.format(epoch,train_loss, train_acc, loss.data, accuracy))
 
 
+torch.save(best_model, Trained_model_Root + "/"+data_size+data_type+"_rgb_3d.pt")
 
-#%%
+
