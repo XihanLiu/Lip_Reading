@@ -42,9 +42,9 @@ from scipy.io import savemat
 # data_type = "_II"
 # data_size = "small"
 
-PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/standard/typeIII' # path to the 3d_matrix root
+PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeIII' # path to the 3d_matrix root
 data_type = "_III"
-data_size = "standard"
+data_size = "small"
 
 
 def loadConstructedDataset(PATH):
@@ -80,15 +80,15 @@ targets_train = loadConstructedDataset(PATH_ROOT+"/Lip_3d_"+data_size+data_type+
 X_train = normalization(X_train)
 X_test = normalization(X_test)
 #%%
-temp = X_train[1,:,:,:,16]
-temp2 = np.ones((50,100,3))
+# temp = X_train[1,:,:,:,16]
+# temp2 = np.ones((50,100,3))
 
-for i in range(temp.shape[0]):
-    temp2[:,:,i] = temp[i,:,:]
-    plt.imshow(temp[i,:,:])
-    plt.show()
-plt.imshow(temp2.astype('uint8'))
-temp_gray = cv2.cvtColor(temp.reshape(25,50,3), cv2.COLOR_RGB2GRAY)
+# for i in range(temp.shape[0]):
+#     temp2[:,:,i] = temp[i,:,:]
+#     plt.imshow(temp[i,:,:])
+#     plt.show()
+# plt.imshow(temp2.astype('uint8'))
+# temp_gray = cv2.cvtColor(temp.reshape(25,50,3), cv2.COLOR_RGB2GRAY)
 
 #%%
 #convert all the variables to pytorch tensor format
@@ -355,6 +355,66 @@ class CNNModel_4(nn.Module):
           out = self.relu(out)
           
           return out
+
+# max 68%
+class CNNModel_5(nn.Module):
+    def __init__(self):
+      super(CNNModel_5,self).__init__()
+    
+      self.conv_layer1=self._conv_layer_set(3,256)
+      self.conv_layer2=self._conv_layer_set_2(256,128)
+      self.conv_layer3=self._conv_layer_set_3(128,16)
+      self.fc1=nn.Linear(6912, 2048)
+      # self.fc2 = nn.Linear(2048, 64)
+      self.fc3=nn.Linear(2048,num_classes)
+      self.relu = nn.LeakyReLU()
+      self.sigmoid = nn.Sigmoid()
+      self.batch=nn.BatchNorm1d(6912)
+      self.drop=nn.Dropout(p=0.12)        
+          
+    def _conv_layer_set(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 2), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((3, 3, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_2(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 2), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((5, 5, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_3(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(2, 2, 1), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((2, 2, 1)),
+          )
+          return conv_layer
+
+    def forward(self, x):
+          # Set 1
+          out = self.conv_layer1(x)
+          out = self.conv_layer2(out)
+          out = self.relu(out)
+          # print(out.shape)
+          # out = self.conv_layer3(out)
+          out = out.view(out.size(0), -1)
+          out = self.batch(out)
+          out = self.fc1(out)
+          out = self.relu(out)
+          
+          out = self.drop(out)
+          # out = self.fc2(out)
+          out = self.fc3(out)
+          out = self.relu(out)
+          
+          return out    
+
 #%%
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
@@ -362,17 +422,17 @@ print(device)
 
 #Definition of hyperparameters
 n_iters = 2000
-num_epochs = 20
+num_epochs = 40
 
 
 # Create CNN
-model = CNNModel_3().to(device)
+model = CNNModel_5().to(device)
 
 # Cross Entropy Loss 
 error = nn.CrossEntropyLoss()
 
 # SGD Optimizer
-learning_rate = 0.00005
+learning_rate = 0.00001
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 #%%

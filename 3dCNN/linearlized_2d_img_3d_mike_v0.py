@@ -44,8 +44,8 @@ from numpy.linalg import norm
 from scipy.io import savemat
 
 #%%
-PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeIII' # path to the 3d_matrix root
-data_type = "_III"
+PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeII' # path to the 3d_matrix root
+data_type = "_II"
 data_size = "small"
 
 # PATH_ROOT = 'F:/newdata' # path to the 3d_matrix root
@@ -233,15 +233,15 @@ class CNNModel_2(nn.Module):
       #4,10,1
       # self.fc1=nn.Linear(1056, 2048)
       # self.fc2 = nn.Linear(2048, 64)
-      self.fc3=nn.Linear(1056,num_classes)
+      self.fc3=nn.Linear(18720,num_classes)
       self.relu = nn.LeakyReLU()
       self.sigmoid = nn.Sigmoid()
-      self.batch=nn.BatchNorm1d(1056)
+      self.batch=nn.BatchNorm1d(18720)
       self.drop=nn.Dropout(p=0.12)        
           
     def _conv_layer_set(self, in_c, out_c):
           conv_layer = nn.Sequential(
-          nn.Conv2d(in_c, out_c, kernel_size=(10, 3), padding=0),
+          nn.Conv2d(in_c, out_c, kernel_size=(20, 3), padding=0),
           nn.LeakyReLU(),
           nn.MaxPool2d((3, 3)),
           )
@@ -249,7 +249,7 @@ class CNNModel_2(nn.Module):
     
     def _conv_layer_set_2(self, in_c, out_c):
           conv_layer = nn.Sequential(
-          nn.Conv2d(in_c, out_c, kernel_size=(10, 3), padding=0),
+          nn.Conv2d(in_c, out_c, kernel_size=(20, 3), padding=0),
           nn.LeakyReLU(),
           nn.MaxPool2d((2, 2)),
           )
