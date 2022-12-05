@@ -82,8 +82,8 @@ def constuct_Dataset_withSplitingRatio(PathRoot, data_dirc, Dataset_type, spliti
     return TrainData_array, TestData_array, train_label[:,0], test_label[:,0], label_string_list
     
 #%% test field
-X_train, X_test, targets_train, targets_test, label_string_list = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.5)
-
+X_train, X_test, targets_train, targets_test, label_string_list = constuct_Dataset_withSplitingRatio(PATH_ROOT, Data_dirc, DatasetType, 0.95)
+print(label_string_list)
 #%% save file
 mdic_X_train = {"Lip_frames_"+ DatasetSize + DatasetType +"_X_train": X_train}
 savemat("Lip_frames_"+DatasetSize +"_"+ DatasetType+"_X_train.mat",mdic_X_train)

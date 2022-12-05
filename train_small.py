@@ -40,10 +40,10 @@ else:
 # mps_device = 'cpu'
 #%%
 
-X_train = loadmat('Lip_frames_small_III_X_train.mat')['Lip_frames_smallIII_X_train']
-X_test = loadmat('Lip_frames_small_III_X_test.mat')['Lip_frames_smallIII_X_test']
-targets_train = loadmat('Lip_frames_small_III_targets_train.mat')['Lip_frames_smallIII_targets_train']
-targets_test = loadmat('Lip_frames_small_III_targets_test.mat')['Lip_frames_smallIII_targets_test']
+X_train = loadmat('Lip_frames_small_I_X_train.mat')['Lip_frames_smallI_X_train']
+X_test = loadmat('Lip_frames_small_I_X_test.mat')['Lip_frames_smallI_X_test']
+targets_train = loadmat('Lip_frames_small_I_targets_train.mat')['Lip_frames_smallI_targets_train']
+targets_test = loadmat('Lip_frames_small_I_targets_test.mat')['Lip_frames_smallI_targets_test']
 #%%
 #convert all the variables to pytorch tensor format
 #X_train should have shape (num_of_dataset,50,100,29,3) and targets_train(num_of_dataset,1)
@@ -74,8 +74,8 @@ test_loader=torch.utils.data.DataLoader(test,batch_size=batch_size,shuffle=True)
 # del test
 #%%
 #Definition of hyperparameters
-n_iters = 2000
-num_epochs = 5
+n_iters = 400
+num_epochs = 10
 #num_epochs = n_iters / (len(train_x) / batch_size)
 #num_epochs = int(num_epochs)
 
@@ -88,17 +88,17 @@ RNN_model.to(mps_device)
 # print(CNN_model)
 # print(RNN_model)
 
-# Cross Entropy Loss 
+# Loss Function 
 error = nn.CrossEntropyLoss()
 
 # SGD Optimizer
-learning_rate = 0.1
+learning_rate = 0.00001
 optimizer = torch.optim.Adam(CNN_model.parameters(), lr=learning_rate)
 optimizer = torch.optim.Adam(RNN_model.parameters(), lr=learning_rate)
 #%%
 #train model
 # CNN model training
-print("Start training...")
+# print("Start training...")
 count = 0
 loss_list = []
 iteration_list = []
@@ -127,7 +127,7 @@ for epoch in range(num_epochs):
             optimizer.step()
         
             count += 1
-    print("Start testing...")
+    # print("Start testing...")
     # Calculate Accuracy         
     correct = 0
     total = 0
