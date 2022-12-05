@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = empty-project-type
-recent_files = ['3dCNN\\3d_cnn_v2_loadConstructedDataset.py']
+recent_files = ['3dCNN\\2d_cnn_v2_loadConstructedDataset.py', 'OpenCV_FaceLandMark_GroupOfVideo.py']
 
 [main]
 version = 0.2.0
