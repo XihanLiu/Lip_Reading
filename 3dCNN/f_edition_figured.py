@@ -23,7 +23,7 @@ from sklearn.model_selection import train_test_split
 #for evaluating the model
 from sklearn.metrics import accuracy_score
 
-#Pytorch libraries and modules
+#Pytorch libraries and modulesw
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
