@@ -42,9 +42,9 @@ from scipy.io import savemat
 # data_type = "_II"
 # data_size = "small"
 
-PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/small/typeIII' # path to the 3d_matrix root
+PATH_ROOT = 'D:/Study/Master/Semaster_1/formated_dataset/TRAIN/standard/typeIII' # path to the 3d_matrix root
 data_type = "_III"
-data_size = "small"
+data_size = "standard"
 
 
 def loadConstructedDataset(PATH):
@@ -81,7 +81,7 @@ X_train = normalization(X_train)
 X_test = normalization(X_test)
 #%%
 temp = X_train[1,:,:,:,16]
-temp2 = np.ones((25,50,3))
+temp2 = np.ones((50,100,3))
 
 for i in range(temp.shape[0]):
     temp2[:,:,i] = temp[i,:,:]
@@ -366,13 +366,13 @@ num_epochs = 20
 
 
 # Create CNN
-model = CNNModel_4().to(device)
+model = CNNModel_3().to(device)
 
 # Cross Entropy Loss 
 error = nn.CrossEntropyLoss()
 
 # SGD Optimizer
-learning_rate = 0.00001
+learning_rate = 0.00005
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 #%%

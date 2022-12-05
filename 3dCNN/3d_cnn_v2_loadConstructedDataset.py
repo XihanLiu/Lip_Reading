@@ -207,6 +207,7 @@ for epoch in range(num_epochs):
         batch_size = images.shape[0]
         if batch_size == 10:
             labels = Variable(labels)
+            # print(labels.shape)
             # Clear gradients
             optimizer.zero_grad()
             # Forward propagation
