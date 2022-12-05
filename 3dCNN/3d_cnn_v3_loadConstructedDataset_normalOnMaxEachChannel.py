@@ -560,7 +560,7 @@ for epoch in range(num_epochs):
         print("---- NEW BEST")
     print('Epoch:{}  Train_Loss:{} Train_Acc :{}% Val_Loss:{}  Val_Acc:{}%'.format(epoch,train_loss, train_acc, loss.data, accuracy))
 
-
+#%%
 torch.save(best_model, Trained_model_Root + "/"+data_size+data_type+"_rgb_3d.pt")
 
 

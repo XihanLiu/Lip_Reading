@@ -13,6 +13,15 @@ import urllib.request as urlreq
 import os
 # used to plot our images
 import matplotlib.pyplot as plt
+#Pytorch libraries and modules
+import torch
+from torch.autograd import Variable
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.optim import *
+import h5py
+import shutil
+#from plot3D import *
 # used to change image size
 from pylab import rcParams
 import numpy as np
@@ -27,9 +36,76 @@ Path_VideoImageExample_root = "example_lip_extracted/VideoImageExample/"
 Path_fullFrames = "frameExtraction/"
 Path_2dFrames = "Lip_frameByFrame/"
 Path_3dMatrixs = "Lip_3dMatrix/"
+Path_trained_model_ROOT = "D:\Study\Master\Semaster_1\Lip_Reading\3dCNN\Trained_model"
+Path_imported_model_name = "small_III_rgb_3d.pt"
+Label_String_list = ['AHEAD','AROUND','AGAIN','ACTUALLY','ANSWER','ALLOWED','ALLOW','ACCESS','ALWAYS','AMERICA','ABSOLUTELY']
+#%%
+class CNNModel_6(nn.Module):
+    def __init__(self):
+      super(CNNModel_6,self).__init__()
+    
+      self.conv_layer1=self._conv_layer_set(3,256)
+      self.conv_layer2=self._conv_layer_set_2(256,128)
+      self.conv_layer3=self._conv_layer_set_3(128,16)
+      self.fc1=nn.Linear(14336, 2048)
+      self.fc2 = nn.Linear(2048, 64)
+      self.fc3=nn.Linear(64,num_classes)
+      self.relu = nn.LeakyReLU()
+      self.sigmoid = nn.Sigmoid()
+      self.batch=nn.BatchNorm1d(14336)
+      self.drop=nn.Dropout(p=0.12)        
+          
+    def _conv_layer_set(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 2), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((3, 3, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_2(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(3, 3, 1), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((3, 3, 1)),
+          )
+          return conv_layer
+    
+    def _conv_layer_set_3(self, in_c, out_c):
+          conv_layer = nn.Sequential(
+          nn.Conv3d(in_c, out_c, kernel_size=(2, 2, 1), padding=0),
+          nn.LeakyReLU(),
+          nn.MaxPool3d((2, 2, 1)),
+          )
+          return conv_layer
+
+    def forward(self, x):
+          # Set 1
+          out = self.conv_layer1(x)
+          out = self.conv_layer2(out)
+          out = self.relu(out)
+          # print(out.shape)
+          # out = self.conv_layer3(out)
+          out = out.view(out.size(0), -1)
+          out = self.batch(out)
+          out = self.fc1(out)
+          # out = self.relu(out)
+          
+          out = self.drop(out)
+          out = self.fc2(out)
+          out = self.fc3(out)
+          out = self.relu(out)
+          
+          return out
+
 #%%
 
-def Video2Frames(Path_video, Path_3dMatrix, VideoName):
+# def LipReading_main(Path_video, VideoName, Path_model, Path_result):
+    
+
+
+
+def Video2Frames(Path_video, VideoName):
     '''
     Parameters
     ----------
@@ -52,7 +128,7 @@ def Video2Frames(Path_video, Path_3dMatrix, VideoName):
     #                                making directories                                  #
     #------------------------------------------------------------------------------------#
     # @TODO: make prediction dirctory in the example folder 
-    Path_currentVideo_3dMatrix_small_typeIII = Path_3dMatrix+VideoName+"/"+"small/typeIII/"
+    # Path_currentVideo_3dMatrix_small_typeIII = Path_3dMatrix+VideoName+"/"+"small/typeIII/"
     os.makedirs(Path_currentVideo_3dMatrix_small_typeIII, exist_ok=True)
     
     lip_dst_small_list = []
@@ -75,11 +151,8 @@ def Video2Frames(Path_video, Path_3dMatrix, VideoName):
 
     
     lip_dst_small_3d_array = np.array(lip_dst_small_list)
-    mdic = {"lip_dst_small_3d_array": lip_dst_small_3d_array}
-    savemat(Path_currentVideo_3dMatrix_small_typeIII+"_3dTypeIII.mat",mdic)
-    
-
-
+    print(lip_dst_small_3d_array.shape)
+    return lip_dst_small_3d_array
 
 
 
